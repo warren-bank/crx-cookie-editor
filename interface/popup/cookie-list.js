@@ -35,6 +35,18 @@
             return false;
         }
 
+        function filterCookies(filterText) {
+            Array.from(document.getElementById('cookie-container').children[0].children)
+            .map(cookieElement => {
+                const cookieName = cookieElement.children[0].getElementsByTagName('span')[0].textContent.toLocaleLowerCase();
+                if (cookieName.match(filterText.toLowerCase())) {
+                    cookieElement.classList.remove('hide');
+                } else {
+                    cookieElement.classList.add('hide');
+                }
+            });
+        }
+
         function saveCookieForm(form) {
             let isCreateForm = form.classList.contains('create');
 
@@ -180,6 +192,8 @@
                 }
             });
         }
+
+        document.getElementById('searchField').addEventListener('keyup', e => filterCookies(e.target.value));
 
         document.getElementById('create-cookie').addEventListener('click', () => {
             if (disableButtons) {
