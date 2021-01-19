@@ -430,10 +430,12 @@
                 if (containerCookie.firstChild) {
                     disableButtons = true;
                     Animate.transitionPage(containerCookie, containerCookie.firstChild, cookiesListHtml, 'right', () => {
+                        filterCookies();
                         disableButtons = false;
                     });
                 } else {
                     containerCookie.appendChild(cookiesListHtml);
+                    filterCookies();
                 }
             } else {
                 showNoCookies();
