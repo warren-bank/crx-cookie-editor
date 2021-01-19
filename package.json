@@ -1,5 +1,6 @@
 {
 	"name":        "Cookie Editor - Extended",
+  "nameZipFile": "cookie-editor-extended",
 	"version":     "2.0.1",
 	"author":      "Moustachauve",
 	"description": "Simple yet powerful Cookie Editor that allow you to quickly create, edit and delete cookies without leaving your tab.",

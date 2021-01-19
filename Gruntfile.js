@@ -102,7 +102,7 @@ module.exports = function(grunt) {
         compress: {
             firefox: {
                 options: {
-                    archive: 'dist/<%= pkg.name %>-<%= grunt.task.current.target %>-<%= pkg.version %>.zip'
+                    archive: 'dist/<%= pkg.nameZipFile %>-<%= grunt.task.current.target %>-<%= pkg.version %>.zip'
                 },
                 files: [
                     {expand: true, cwd: 'build/<%= grunt.task.current.target %>/', src: ['**'], dest: '/'}
@@ -110,7 +110,7 @@ module.exports = function(grunt) {
             },
             chrome: {
                 options: {
-                    archive: 'dist/<%= pkg.name %>-<%= grunt.task.current.target %>-<%= pkg.version %>.zip'
+                    archive: 'dist/<%= pkg.nameZipFile %>-<%= grunt.task.current.target %>-<%= pkg.version %>.zip'
                 },
                 files: [
                     {expand: true, cwd: 'build/<%= grunt.task.current.target %>/', src: ['**'], dest: '/'}
@@ -118,7 +118,7 @@ module.exports = function(grunt) {
             },
             opera: {
                 options: {
-                    archive: 'dist/<%= pkg.name %>-<%= grunt.task.current.target %>-<%= pkg.version %>.zip'
+                    archive: 'dist/<%= pkg.nameZipFile %>-<%= grunt.task.current.target %>-<%= pkg.version %>.zip'
                 },
                 files: [
                     {expand: true, cwd: 'build/<%= grunt.task.current.target %>/', src: ['**'], dest: '/'}
