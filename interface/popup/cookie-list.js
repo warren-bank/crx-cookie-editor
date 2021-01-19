@@ -225,6 +225,11 @@
         });
 
         document.getElementById('delete-all-cookies').addEventListener('click', () => {
+            if (areNoCookies()) {
+                sendNotification('There are no cookies to delete');
+                return;
+            }
+
             let buttonIcon = document.getElementById('delete-all-cookies').querySelector('use');
             if (buttonIcon.getAttribute("href") === "../sprites/solid.svg#check") {
                 return;
@@ -275,6 +280,11 @@
         });
 
         document.getElementById('export-cookies').addEventListener('click', () => {
+            if (areNoCookies()) {
+                sendNotification('There are no cookies to export');
+                return;
+            }
+
             if (disableButtons) {
                 return;
             }
@@ -591,7 +601,7 @@
             console.log('removed successfuly', {name, url});
 
             cookieContainer.removeHtml(() => {
-                if (!Object.keys(loadedCookies).length) {
+                if (areNoCookies()) {
                     showNoCookies();
                 }
             });
@@ -623,7 +633,7 @@
         if (changeInfo.removed) {
             if (loadedCookies[id]) {
                 loadedCookies[id].removeHtml(() => {
-                    if (!Object.keys(loadedCookies).length) {
+                    if (areNoCookies()) {
                         showNoCookies();
                     }
                 });
@@ -651,6 +661,10 @@
         }
 
         filterCookies();
+    }
+
+    function areNoCookies() {
+        return (!Object.keys(loadedCookies).length);
     }
 
     function onCookieHandlerReady() {
