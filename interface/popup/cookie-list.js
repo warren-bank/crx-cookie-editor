@@ -229,16 +229,32 @@
             if (buttonIcon.getAttribute("href") === "../sprites/solid.svg#check") {
                 return;
             }
-            if (loadedCookies && Object.keys(loadedCookies).length) {
-                for (let cookieId in loadedCookies) {
-                    removeCookie(cookieId);
-                }
-            }
-            sendNotification('All cookies were deleted');
             buttonIcon.setAttribute("href", "../sprites/solid.svg#check");
             setTimeout(() => {
                 buttonIcon.setAttribute("href", "../sprites/solid.svg#trash");
             }, 1500);
+
+            if (loadedCookies) {
+                let cookieContainer;
+                for (let cookieId in loadedCookies) {
+                    cookieContainer = loadedCookies[cookieId];
+
+                    if (!filteredCookiesRegex || cookieContainer.cookie.name.match(filteredCookiesRegex)) {
+                        removeCookie(cookieId);
+                    }
+                }
+            }
+
+            sendNotification('All ' + (filteredCookiesRegex ? 'filtered ' : '') + 'cookies were deleted');
+
+            // judgement call:
+            //   Personally, I feel that it's bad UI to show an empty filtered list.
+            //   Better to remove the filter.
+            if (filteredCookiesRegex) {
+                document.getElementById('searchField').value = '';
+                filteredCookiesRegex = null;
+                filterCookies();
+            }
         });
 
         document.getElementById('import-cookies').addEventListener('click', () => {
