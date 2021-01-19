@@ -1,6 +1,8 @@
 {
-  "name": "cookie-editor-extended",
-  "version": "2.0.0",
+	"name":        "Cookie Editor - Extended",
+	"version":     "2.0.0",
+	"author":      "Moustachauve",
+	"description": "Simple yet powerful Cookie Editor that allow you to quickly create, edit and delete cookies without leaving your tab.",
   "devDependencies": {
     "grunt": "~1.0.3",
     "grunt-contrib-clean": "^2.0.0",

@@ -1,8 +1,9 @@
 {
 	"manifest_version": 2,
-	"name": "Cookie Editor - Extended",
+	"name": "",
 	"version": "",
-	"description": "Simple yet powerful Cookie Editor that allow you to quickly create, edit and delete cookies without leaving your tab.",
+	"author": "",
+	"description": "",
 	"background": {
 		"scripts": [
 			"interface/lib/browserDetector.js",

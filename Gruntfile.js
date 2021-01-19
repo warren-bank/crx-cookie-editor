@@ -7,7 +7,10 @@ module.exports = function(grunt) {
             options: {
                 space : "\t",
                 replace: {
-                    version: "<%= pkg.version %>"
+                    name:        "<%= pkg.name %>",
+                    version:     "<%= pkg.version %>",
+                    author:      "<%= pkg.author %>",
+                    description: "<%= pkg.description %>"
                 }
             },
             firefox: {
