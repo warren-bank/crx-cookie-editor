@@ -4,6 +4,7 @@
     let containerCookie;
     let cookiesListHtml;
     let pageTitleContainer;
+    let searchContainer;
     let notificationElement;
     let loadedCookies = {};
     let filteredCookiesRegex = null;
@@ -21,6 +22,7 @@
         containerCookie = document.getElementById('cookie-container');
         notificationElement = document.getElementById('notification');
         pageTitleContainer = document.getElementById('pageTitle');
+        searchContainer = document.getElementById('searchContainer');
 
         function expandCookie(e) {
             const parent = e.target.closest('li');
@@ -160,6 +162,21 @@
             }
         }
 
+        function getExportedCookies(filter) {
+            const exportedCookies = [];
+            for (let cookieId in loadedCookies) {
+                let exportedCookie = loadedCookies[cookieId].cookie;
+                exportedCookie.storeId = null;
+                if (exportedCookie.sameSite === 'unspecified') {
+                    exportedCookie.sameSite = null;
+                }
+                if (!filter || !filteredCookiesRegex || exportedCookie.name.match(filteredCookiesRegex)) {
+                  exportedCookies.push(exportedCookie);
+                }
+            }
+            return exportedCookies;
+        }
+
         if (containerCookie) {
             containerCookie.addEventListener('click', e => {
                 let target = e.target;
@@ -213,7 +230,7 @@
                 return;
             }
             if (loadedCookies && Object.keys(loadedCookies).length) {
-                for (var cookieId in loadedCookies) {
+                for (let cookieId in loadedCookies) {
                     removeCookie(loadedCookies[cookieId].cookie.name);
                 }
             }
@@ -221,32 +238,6 @@
             buttonIcon.setAttribute("href", "../sprites/solid.svg#check");
             setTimeout(() => {
                 buttonIcon.setAttribute("href", "../sprites/solid.svg#trash");
-            }, 1500);
-        });
-
-        document.getElementById('export-cookies').addEventListener('click', () => {
-            let buttonIcon = document.getElementById('export-cookies').querySelector('use');
-            if (buttonIcon.getAttribute("href") === "../sprites/solid.svg#check") {
-                return;
-            }
-
-            buttonIcon.setAttribute("href", "../sprites/solid.svg#check");
-
-            var exportedCookies = [];
-            for (var cookieId in loadedCookies) {
-                var exportedCookie = loadedCookies[cookieId].cookie;
-                exportedCookie.storeId = null;
-                if (exportedCookie.sameSite === 'unspecified') {
-                    exportedCookie.sameSite = null;
-                }
-                exportedCookies.push(exportedCookie);
-            }
-
-            copyText(JSON.stringify(exportedCookies, null, 4));
-
-            sendNotification('Cookies exported to clipboard');
-            setTimeout(() => {
-                buttonIcon.setAttribute("href", "../sprites/solid.svg#file-export");
             }, 1500);
         });
 
@@ -267,10 +258,30 @@
             return false;
         });
 
+        document.getElementById('export-cookies').addEventListener('click', () => {
+            if (disableButtons) {
+                return;
+            }
+
+            setPageTitle('Cookie Editor - Export Cookies');
+
+            disableButtons = true;
+            Animate.transitionPage(containerCookie, containerCookie.firstChild, createHtmlFormExport(), 'left', () => {
+                disableButtons = false;
+            });
+
+            document.getElementById('button-bar-default').classList.remove('active');
+            document.getElementById('button-bar-export').classList.add('active');
+            return false;
+        });
+
         document.getElementById('return-list-add').addEventListener('click', () => {
             showCookiesForTab();
         });
         document.getElementById('return-list-import').addEventListener('click', () => {
+            showCookiesForTab();
+        });
+        document.getElementById('return-list-export').addEventListener('click', () => {
             showCookiesForTab();
         });
 
@@ -335,6 +346,41 @@
             });
 
             sendNotification('Cookies were created');
+            showCookiesForTab();
+        });
+
+        document.getElementById('save-export-cookie').addEventListener('click', e => {
+            let buttonIcon = document.getElementById('save-export-cookie').querySelector('use');
+            if (buttonIcon.getAttribute("href") !== "../sprites/solid.svg#file-export") {
+                return;
+            }
+
+            let exportedFormat = document.querySelector('input[name="export-format"]:checked').value;
+            let exportedCookies;
+
+            switch (exportedFormat) {
+                case 'all_json':
+                    exportedCookies = getExportedCookies(false);
+                    copyText(JSON.stringify(exportedCookies, null, 4));
+                    sendNotification('Cookies exported to clipboard');
+                    break;
+                case 'all_text':
+                    exportedCookies = getExportedCookies(false);
+                    exportNetscapeCookiesText(exportedCookies);
+                    break;
+                case 'filtered_json':
+                    exportedCookies = getExportedCookies(true);
+                    copyText(JSON.stringify(exportedCookies, null, 4));
+                    sendNotification('Cookies exported to clipboard');
+                    break;
+                case 'filtered_text':
+                    exportedCookies = getExportedCookies(true);
+                    exportNetscapeCookiesText(exportedCookies);
+                    break;
+                default:
+                    break;
+            }
+
             showCookiesForTab();
         });
 
@@ -413,16 +459,17 @@
 
             loadedCookies = {};
 
-            setPageTitle('Cookie Editor');
+            setPageTitle('Cookie Editor', /* showSearchFilter */ true);
 
             document.getElementById('button-bar-add').classList.remove('active');
             document.getElementById('button-bar-import').classList.remove('active');
+            document.getElementById('button-bar-export').classList.remove('active');
             document.getElementById('button-bar-default').classList.add('active');
 
             if (cookies.length > 0) {
                 cookiesListHtml = document.createElement('ul');
                 cookies.forEach(function (cookie) {
-                    var id = Cookie.hashCode(cookie);
+                    let id = Cookie.hashCode(cookie);
                     loadedCookies[id] = new Cookie(id, cookie, showAllAdvanced);
                     cookiesListHtml.appendChild(loadedCookies[id].html);
                 });
@@ -469,7 +516,7 @@
     }
 
     function createHtmlForCookie(name, value, id) {
-        var cookie = new Cookie(id, {
+        const cookie = new Cookie(id, {
             'name': name,
             'value': value
         });
@@ -484,6 +531,11 @@
 
     function createHtmlFormImport() {
         let template = document.importNode(document.getElementById('tmp-import').content, true);
+        return template.querySelector('form');
+    }
+
+    function createHtmlFormExport() {
+        let template = document.importNode(document.getElementById('tmp-export').content, true);
         return template.querySelector('form');
     }
 
@@ -507,7 +559,7 @@
         }
 
         console.log('Cookies have changed!', changeInfo.removed, changeInfo.cause);
-        var id = Cookie.hashCode(changeInfo.cookie);
+        const id = Cookie.hashCode(changeInfo.cookie);
 
         if (changeInfo.cause === 'overwrite') {
             return;
@@ -530,7 +582,7 @@
             return;
         }
 
-        var newCookie = new Cookie(id, changeInfo.cookie);
+        const newCookie = new Cookie(id, changeInfo.cookie);
         loadedCookies[id] = newCookie;
 
         if (!cookiesListHtml && document.getElementById('no-cookies')) {
@@ -615,12 +667,17 @@
         notificationElement.classList.add('fadeOutDown');
     }
 
-    function setPageTitle(title) {
-        if (!pageTitleContainer) {
-            return;
+    function setPageTitle(title, showSearchFilter) {
+        if (pageTitleContainer) {
+            pageTitleContainer.querySelector('h1').textContent = title;
         }
-
-        pageTitleContainer.querySelector('h1').textContent = title;
+        if (searchContainer) {
+            if (showSearchFilter) {
+                searchContainer.classList.remove('hide');
+            } else {
+                searchContainer.classList.add('hide');
+            }
+        }
     }
 
     function copyText(text) {
@@ -632,6 +689,64 @@
         fakeText.select();
         document.execCommand('Copy');
         document.body.removeChild(fakeText);
+    }
+
+    function exportNetscapeCookiesText(exportedCookies) {
+        // https://github.com/daftano/cookies.txt/blob/master/src/popup.js
+        // http://www.cookiecentral.com/faq/#3.5
+
+        const tabUrl = cookieHandler.currentTab.url;
+        const domain = getDomainFromUrl(tabUrl);
+
+        let text = '';
+
+        text += '# HTTP Cookie File for domains related to: "' + escapeForPre(domain) + '"' + "\n";
+        text += '# Example: wget --load-cookies cookies.txt "' + escapeForPre(tabUrl) + '"' + "\n";
+        text += '#' + "\n";
+
+        let cookie;
+        for (let i=0; i < exportedCookies.length; i++) {
+            cookie = exportedCookies[i];
+
+            text += escapeForPre(cookie.domain);
+            text += "\t";
+            text += escapeForPre((!cookie.hostOnly).toString().toUpperCase());
+            text += "\t";
+            text += escapeForPre(cookie.path);
+            text += "\t";
+            text += escapeForPre(cookie.secure.toString().toUpperCase());
+            text += "\t";
+            text += escapeForPre(cookie.expirationDate ? Math.round(cookie.expirationDate) : "0");
+            text += "\t";
+            text += escapeForPre(cookie.name);
+            text += "\t";
+            text += escapeForPre(cookie.value);
+            text += "\n";
+        }
+
+        let url;
+        try {
+            const blob = new Blob([text], {type: 'octet/stream'});
+            url = window.URL.createObjectURL(blob);
+        }
+        catch(error) {
+            url = 'data:application/octet-stream;base64,' + btoa(text);
+        }
+
+        const filename = 'cookies.txt';
+        const anchor   = document.createElement('a');
+        anchor.setAttribute('href', url);
+        anchor.setAttribute('download', filename);
+        anchor.click();
+    }
+
+    function escapeForPre(text) {
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
     function isArray(value) {

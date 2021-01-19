@@ -21,9 +21,10 @@
                 Show Advanced
             </label>
         </div>
-    </div>
-    <div id="searchContainer">
-        <input id="searchField" type="text" placeholder="Search" />
+
+        <div id="searchContainer">
+            <input id="searchField" type="text" placeholder="Search" />
+        </div>
     </div>
 
     <div id="cookie-container"></div>
@@ -92,6 +93,24 @@
                 <div>
                     <svg class="icon"><use href="../sprites/solid.svg#file-import"></use></svg>
                     <div class="tooltip">Import</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel button-bar" id="button-bar-export">
+        <div class="panel-section panel-section-footer">
+            <div class="panel-section-footer-button" id="return-list-export">
+                <div>
+                    <svg class="icon"><use href="../sprites/solid.svg#arrow-left"></use></svg>
+                    <div class="tooltip">Cancel</div>
+                </div>
+            </div>
+            <div class="panel-section-footer-separator"></div>
+            <div class="panel-section-footer-button primary" id="save-export-cookie">
+                <div>
+                    <svg class="icon"><use href="../sprites/solid.svg#file-export"></use></svg>
+                    <div class="tooltip">Export</div>
                 </div>
             </div>
         </div>
@@ -202,6 +221,20 @@
             <div>
                 <label for="content-import">Json</label>
                 <textarea class="json" name="content" id="content-import" placeholder="Paste your Json here"></textarea>
+            </div>
+        </form>
+    </template>
+
+    <template id="tmp-export">
+        <form class="form container export">
+            <div>
+                <h3>Export:</h3>
+                <ul>
+                    <li><input type="radio" name="export-format" value="all_json" checked="checked">all cookies to clipboard in JSON format</input></li>
+                    <li><input type="radio" name="export-format" value="all_text">all cookies to text file in Netscape format</input></li>
+                    <li><input type="radio" name="export-format" value="filtered_json">filtered cookies to clipboard in JSON format</input></li>
+                    <li><input type="radio" name="export-format" value="filtered_text">filtered cookies to text file in Netscape format</input></li>
+                </ul>
             </div>
         </form>
     </template>

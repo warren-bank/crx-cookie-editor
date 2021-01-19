@@ -49,6 +49,18 @@ svg.icon {
     min-width: 0;
 }
 
+#pageTitle #searchContainer {
+    width: 100%;
+    margin: auto;
+    padding: 5px 20px;
+}
+#pageTitle #searchContainer.hide {
+    display: none;
+}
+#pageTitle #searchContainer #searchField {
+    width: 100%;
+}
+
 h2 {
     margin: 0;
     padding: 0;
@@ -58,16 +70,6 @@ button {
     cursor: pointer;
 }
 button:focus {outline:0;}
-
-#searchContainer {
-  width: 100%;
-  margin: auto;
-  padding: 5px 20px;
-}
-
-#searchField {
-  width: 100%;
-}
 
 #cookie-container {
     min-height: 100px;
@@ -172,11 +174,19 @@ button:focus {outline:0;}
     resize: none;
 }
 
-#cookie-container textarea.json {
+#cookie-container form.import textarea.json {
     height: 360px;
     font-family: Consolas,Monaco,monospace;
     white-space: pre;
     overflow:auto;
+}
+
+#cookie-container form.export h3 {
+    margin: 0 0 0.5em 0;
+}
+#cookie-container form.export ul,
+#cookie-container form.export ul li {
+    list-style-type: none;
 }
 
 label {
