@@ -42,12 +42,12 @@ function BrowserDetector() {
     };
 
     this.supportSameSiteCookie = function () {
-        if (doesSupportSameSiteCookie !== null) {
-            return doesSupportSameSiteCookie;
-        }
+        return doesSupportSameSiteCookie;
+    }
 
+    this.runCapabilityDetectionTest_SameSiteCookie = function () {
         const newCookie = {
-            url: 'https://fakeDomain.com/',
+            url: 'https://example.com/',
             name: 'testSameSite',
             value: 'someValue',
             sameSite: 'strict',
@@ -57,6 +57,7 @@ function BrowserDetector() {
             if (this.isFirefox()) {
                 this.getApi().cookies.set(newCookie).then(cookie => {
                     doesSupportSameSiteCookie = true;
+                    this.cleanupCapabilityDetectionTest_SameSiteCookie(newCookie);
                 }, error => {
                     console.error('Failed to create cookie', error);
                     doesSupportSameSiteCookie = false;
@@ -70,6 +71,7 @@ function BrowserDetector() {
                         return;
                     }
                     doesSupportSameSiteCookie = true;
+                    this.cleanupCapabilityDetectionTest_SameSiteCookie(newCookie);
                 });
             }
         } catch(e) {
@@ -79,6 +81,18 @@ function BrowserDetector() {
         return doesSupportSameSiteCookie;
     }
 
-    // We call it right away to make sure the value of doesSupportSameSiteCookie is initialized 
-    this.supportSameSiteCookie();
+    this.cleanupCapabilityDetectionTest_SameSiteCookie = function(newCookie) {
+        if (doesSupportSameSiteCookie) {
+            try {
+                if (this.isFirefox()) {
+                    this.getApi().cookies.remove(newCookie).catch(() => {});
+                } else {
+                    this.getApi().cookies.remove(newCookie, () => {});
+                }
+            } catch(e) {}
+        }
+    };
+
+    // initialize the value of doesSupportSameSiteCookie
+    this.runCapabilityDetectionTest_SameSiteCookie();
 }
