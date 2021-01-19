@@ -188,6 +188,9 @@ button:focus {outline:0;}
 #cookie-container form.export ul li {
     list-style-type: none;
 }
+#cookie-container form.export ul li.hide {
+    display: none;
+}
 
 label {
     display: block;

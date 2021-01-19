@@ -536,7 +536,25 @@
 
     function createHtmlFormExport() {
         let template = document.importNode(document.getElementById('tmp-export').content, true);
-        return template.querySelector('form');
+        let form = template.querySelector('form');
+
+        // conditionally hide filtered options when no filter is active
+        const values = ['filtered_json', 'filtered_text'];
+        let value, radio, listitem;
+        for (value of values) {
+            radio = form.querySelector('input[type="radio"][value="' + value + '"]');
+            if (radio) {
+                listitem = radio.parentElement;
+
+                if (filteredCookiesRegex) {
+                    listitem.classList.remove('hide');
+                } else {
+                    listitem.classList.add('hide');
+                }
+            }
+        }
+
+        return form;
     }
 
     function removeCookie(name, url, callback) {

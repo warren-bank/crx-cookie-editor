@@ -58,10 +58,16 @@ svg.icon {
     font-size: 1.25em;
 }
 
-#pageTitle h2 {
-    font-size: 1em;
-    color: #1a1a1a;
-    font-weight: normal;
+#pageTitle #searchContainer {
+    width: 100%;
+    margin: auto;
+    padding: 5px 20px;
+}
+#pageTitle #searchContainer.hide {
+    display: none;
+}
+#pageTitle #searchContainer #searchField {
+    width: 100%;
 }
 
 #cookie-container {
@@ -83,9 +89,20 @@ form.import > div {
     display: flex;
     flex-direction: column;
 }
-#cookie-container form.import textarea {
+#cookie-container form.import textarea.json {
     flex: 1 1;
     max-height: none;
+}
+
+#cookie-container form.export h3 {
+    margin: 0 0 0.5em 0;
+}
+#cookie-container form.export ul,
+#cookie-container form.export ul li {
+    list-style-type: none;
+}
+#cookie-container form.export ul li.hide {
+    display: none;
 }
 
 #cookie-container ul {
