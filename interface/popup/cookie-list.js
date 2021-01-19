@@ -34,7 +34,7 @@
             e.preventDefault();
             console.log('removing cookie...');
             const listElement = e.target.closest('li');
-            removeCookie(listElement.dataset.name);
+            removeCookie(listElement.id);
             return false;
         }
 
@@ -231,7 +231,7 @@
             }
             if (loadedCookies && Object.keys(loadedCookies).length) {
                 for (let cookieId in loadedCookies) {
-                    removeCookie(loadedCookies[cookieId].cookie.name);
+                    removeCookie(cookieId);
                 }
             }
             sendNotification('All cookies were deleted');
@@ -557,17 +557,38 @@
         return form;
     }
 
-    function removeCookie(name, url, callback) {
-        cookieHandler.removeCookie(name, url || getCurrentTabUrl(), function (e) {
-            console.log('removed successfuly', e);
+    function removeCookie(cookieId, callback) {
+        const cookieContainer = loadedCookies[cookieId];
+        if (!cookieContainer) {
+            return;
+        }
+
+        const name = cookieContainer.cookie.name;
+        const url  = getCurrentTabUrl();
+
+        cookieHandler.removeCookie(name, url, function (errorMessage, cookieResponse) {
+            if (errorMessage) {
+                console.log('error removing cookie', {name, url}, errorMessage);
+                return;
+            }
+
+            console.log('removed successfuly', {name, url});
+
+            cookieContainer.removeHtml(() => {
+                if (!Object.keys(loadedCookies).length) {
+                    showNoCookies();
+                }
+            });
+            delete loadedCookies[cookieId];
+
+            if (browserDetector.isEdge()) {
+                onCookiesChanged();
+            }
+
             if (callback) {
                 callback();
             }
         });
-
-        if (browserDetector.isEdge()) {
-            onCookiesChanged();
-        }
     }
 
     function onCookiesChanged(changeInfo) {
