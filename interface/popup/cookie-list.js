@@ -6,6 +6,7 @@
     let pageTitleContainer;
     let notificationElement;
     let loadedCookies = {};
+    let filteredCookiesRegex = null;
     let disableButtons = false;
 
     let showAllAdvanced;
@@ -35,11 +36,11 @@
             return false;
         }
 
-        function filterCookies(filterText) {
+        function filterCookies() {
             Array.from(document.getElementById('cookie-container').children[0].children)
             .map(cookieElement => {
                 const cookieName = cookieElement.children[0].getElementsByTagName('span')[0].textContent.toLocaleLowerCase();
-                if (cookieName.match(filterText.toLowerCase())) {
+                if (!filteredCookiesRegex || cookieName.match(filteredCookiesRegex)) {
                     cookieElement.classList.remove('hide');
                 } else {
                     cookieElement.classList.add('hide');
@@ -193,7 +194,11 @@
             });
         }
 
-        document.getElementById('searchField').addEventListener('keyup', e => filterCookies(e.target.value));
+        document.getElementById('searchField').addEventListener('keyup', e => {
+          const filterText = e.target.value;
+          updateFilteredCookiesRegex(filterText);
+          filterCookies();
+        });
 
         document.getElementById('create-cookie').addEventListener('click', () => {
             if (disableButtons) {
@@ -659,5 +664,16 @@
             document.body.style.minWidth = '100%';
             document.body.style.width = realWidth + 'px';
         }
+    }
+
+    function updateFilteredCookiesRegex(filterText) {
+      try {
+        filteredCookiesRegex = filterText
+          ? new RegExp(filterText, 'i')
+          : null;
+      }
+      catch(error) {
+        // silently ignore problems with regex pattern
+      }
     }
 }());
