@@ -77,8 +77,6 @@ function BrowserDetector() {
         } catch(e) {
             doesSupportSameSiteCookie = false;
         }
-
-        return doesSupportSameSiteCookie;
     }
 
     this.cleanupCapabilityDetectionTest_SameSiteCookie = function(newCookie) {
