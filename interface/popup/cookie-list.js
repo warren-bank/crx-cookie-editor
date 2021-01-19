@@ -36,18 +36,6 @@
             return false;
         }
 
-        function filterCookies() {
-            Array.from(document.getElementById('cookie-container').children[0].children)
-            .map(cookieElement => {
-                const cookieName = cookieElement.children[0].getElementsByTagName('span')[0].textContent.toLocaleLowerCase();
-                if (!filteredCookiesRegex || cookieName.match(filteredCookiesRegex)) {
-                    cookieElement.classList.remove('hide');
-                } else {
-                    cookieElement.classList.add('hide');
-                }
-            });
-        }
-
         function saveCookieForm(form) {
             let isCreateForm = form.classList.contains('create');
 
@@ -552,6 +540,8 @@
         if (cookiesListHtml) {
             cookiesListHtml.appendChild(newCookie.html);
         }
+
+        filterCookies();
     }
 
     function onCookieHandlerReady() {
@@ -675,5 +665,17 @@
       catch(error) {
         // silently ignore problems with regex pattern
       }
+    }
+
+    function filterCookies() {
+        Array.from(document.getElementById('cookie-container').children[0].children)
+        .map(cookieElement => {
+            const cookieName = cookieElement.children[0].getElementsByTagName('span')[0].textContent.toLocaleLowerCase();
+            if (!filteredCookiesRegex || cookieName.match(filteredCookiesRegex)) {
+                cookieElement.classList.remove('hide');
+            } else {
+                cookieElement.classList.add('hide');
+            }
+        });
     }
 }());
