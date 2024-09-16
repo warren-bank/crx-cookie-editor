@@ -5,6 +5,7 @@
 	"author": "",
 	"description": "",
 	"offline_enabled": true,
+	"incognito": "split",
 	"background": {
 		"scripts": [
 			"interface/lib/browserDetector.js",
