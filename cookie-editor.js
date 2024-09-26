@@ -33,7 +33,16 @@
 
             case 'getCurrentTab':
                 browserDetector.getApi().tabs.query({ active: true, currentWindow: true }, function (tabInfo) {
-                    sendResponse(tabInfo);
+                    if (tabInfo && tabInfo.length) {
+                        sendResponse(tabInfo);
+                    }
+                    else {
+                        browserDetector.getApi().tabs.query({ active: true, windowType: 'normal' }, function (tabInfo) {
+                            if (tabInfo && tabInfo.length) {
+                                sendResponse(tabInfo);
+                            }
+                        });
+                    }
                 });
                 return true;
 
