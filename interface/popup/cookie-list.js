@@ -751,14 +751,7 @@
     }
 
     function copyText(text) {
-        const fakeText = document.createElement('textarea');
-        fakeText.classList.add('clipboardCopier');
-        fakeText.textContent = text;
-        document.body.appendChild(fakeText);
-        fakeText.focus();
-        fakeText.select();
-        document.execCommand('Copy');
-        document.body.removeChild(fakeText);
+        navigator.clipboard.writeText(text);
     }
 
     function exportNetscapeCookiesText(exportedCookies) {
