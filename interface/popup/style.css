@@ -275,7 +275,7 @@ button.delete:hover {
 
 /* Quick workaround the rendering issue for popups */
 body, .expando, #cookie-container {
-	background-image: url("pixel.png");
+    background-image: url("pixel.png");
 }
 
 .panel-section-footer {

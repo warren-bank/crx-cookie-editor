@@ -4,10 +4,10 @@
     const connections = {};
     const browserDetector = new BrowserDetector();
 
-	browserDetector.getApi().runtime.onConnect.addListener(onConnect);
-	browserDetector.getApi().runtime.onMessage.addListener(handleMessage);
-	browserDetector.getApi().tabs.onUpdated.addListener(onTabsChanged);
-	
+    browserDetector.getApi().runtime.onConnect.addListener(onConnect);
+    browserDetector.getApi().runtime.onMessage.addListener(handleMessage);
+    browserDetector.getApi().tabs.onUpdated.addListener(onTabsChanged);
+    
     if (!browserDetector.isEdge()) {
         browserDetector.getApi().cookies.onChanged.addListener(onCookiesChanged);
     }
@@ -19,7 +19,7 @@
         } else {
             popupOptions.popup = '/interface/popup/cookie-list.html';
         }
-		browserDetector.getApi().browserAction.setPopup(popupOptions);
+        browserDetector.getApi().browserAction.setPopup(popupOptions);
     });
 
     function handleMessage(request, sender, sendResponse) {

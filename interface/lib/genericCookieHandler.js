@@ -1,4 +1,3 @@
-
 function GenericCookieHandler() {
     'use strict';
     Event.call(this);
