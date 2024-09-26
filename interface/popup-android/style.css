@@ -112,6 +112,10 @@ form.import > div {
     list-style-type: none;
 }
 
+#cookie-container li.hide {
+    display: none;
+}
+
 #cookie-container li .header {
     padding: 1.25em 1em;
     font-weight: bold;
