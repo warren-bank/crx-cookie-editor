@@ -391,6 +391,12 @@
                     copyText(JSON.stringify(exportedCookies, null, 4));
                     sendNotification('Cookies exported to clipboard');
                     break;
+                case 'all_cookies_to_clipboard_in_request_header':
+                    exportedCookies = getExportedCookies(false);
+                    exportedCookies = formatExportedCookiesInRequestHeader(exportedCookies);
+                    copyText(exportedCookies);
+                    sendNotification('Cookies exported to clipboard');
+                    break;
                 case 'all_cookies_to_clipboard_in_netscape':
                     exportedCookies = getExportedCookies(false);
                     exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
@@ -405,6 +411,12 @@
                 case 'filtered_cookies_to_clipboard_in_json':
                     exportedCookies = getExportedCookies(true);
                     copyText(JSON.stringify(exportedCookies, null, 4));
+                    sendNotification('Cookies exported to clipboard');
+                    break;
+                case 'filtered_cookies_to_clipboard_in_request_header':
+                    exportedCookies = getExportedCookies(true);
+                    exportedCookies = formatExportedCookiesInRequestHeader(exportedCookies);
+                    copyText(exportedCookies);
                     sendNotification('Cookies exported to clipboard');
                     break;
                 case 'filtered_cookies_to_clipboard_in_netscape':
@@ -580,7 +592,7 @@
         let form = template.querySelector('form');
 
         // conditionally hide filtered options when no filter is active
-        const values = ['filtered_cookies_to_clipboard_in_json', 'filtered_cookies_to_clipboard_in_netscape', 'filtered_cookies_to_file_in_netscape'];
+        const values = ['filtered_cookies_to_clipboard_in_json', 'filtered_cookies_to_clipboard_in_request_header', 'filtered_cookies_to_clipboard_in_netscape', 'filtered_cookies_to_file_in_netscape'];
         let value, radio, listitem;
         for (value of values) {
             radio = form.querySelector('input[type="radio"][value="' + value + '"]');
@@ -783,6 +795,20 @@
         anchor.setAttribute('href', url);
         anchor.setAttribute('download', filename);
         anchor.click();
+    }
+
+    function formatExportedCookiesInRequestHeader(exportedCookies) {
+        const pairs = [];
+
+        exportedCookies.map(cookie => {
+            if (cookie && cookie.name && cookie.value)
+                pairs.push(`${cookie.name}=${cookie.value};`);
+        });
+        pairs.sort();
+
+        const header = 'Cookie: ' + pairs.join(" ");
+
+        return header;
     }
 
     function formatExportedCookiesInNetscape(exportedCookies) {
