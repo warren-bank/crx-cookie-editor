@@ -777,7 +777,21 @@
     }
 
     function copyText(text) {
-        navigator.clipboard.writeText(text);
+        navigator.clipboard.writeText(text)
+        .catch(e => {
+            copyText_fallbackStrategy(text);
+        });
+    }
+
+    function copyText_fallbackStrategy(text) {
+        const fakeText = document.createElement('textarea');
+        fakeText.classList.add('clipboardCopier');
+        fakeText.textContent = text;
+        document.body.appendChild(fakeText);
+        fakeText.focus();
+        fakeText.select();
+        document.execCommand('Copy');
+        document.body.removeChild(fakeText);
     }
 
     function saveText(text) {
