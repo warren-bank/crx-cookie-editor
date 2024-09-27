@@ -1,5 +1,7 @@
-/.idea/*
-manifest.json
-build/*
-dist/*
-node_modules
+cookie-editor-extended.pem
+cookie-editor-extended.crx
+cookie-editor-extended.crx2.crx
+cookie-editor-extended.crx3.crx
+cookie-editor-extended.unsigned.xpi
+
+cookie-editor-extended/manifest.json
