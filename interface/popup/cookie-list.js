@@ -391,18 +391,32 @@
                     copyText(JSON.stringify(exportedCookies, null, 4));
                     sendNotification('Cookies exported to clipboard');
                     break;
+                case 'all_cookies_to_clipboard_in_netscape':
+                    exportedCookies = getExportedCookies(false);
+                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
+                    copyText(exportedCookies);
+                    sendNotification('Cookies exported to clipboard');
+                    break;
                 case 'all_cookies_to_file_in_netscape':
                     exportedCookies = getExportedCookies(false);
-                    exportNetscapeCookiesText(exportedCookies);
+                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
+                    saveText(exportedCookies);
                     break;
                 case 'filtered_cookies_to_clipboard_in_json':
                     exportedCookies = getExportedCookies(true);
                     copyText(JSON.stringify(exportedCookies, null, 4));
                     sendNotification('Cookies exported to clipboard');
                     break;
+                case 'filtered_cookies_to_clipboard_in_netscape':
+                    exportedCookies = getExportedCookies(true);
+                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
+                    copyText(exportedCookies);
+                    sendNotification('Cookies exported to clipboard');
+                    break;
                 case 'filtered_cookies_to_file_in_netscape':
                     exportedCookies = getExportedCookies(true);
-                    exportNetscapeCookiesText(exportedCookies);
+                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
+                    saveText(exportedCookies);
                     break;
                 default:
                     break;
@@ -566,7 +580,7 @@
         let form = template.querySelector('form');
 
         // conditionally hide filtered options when no filter is active
-        const values = ['filtered_cookies_to_clipboard_in_json', 'filtered_cookies_to_file_in_netscape'];
+        const values = ['filtered_cookies_to_clipboard_in_json', 'filtered_cookies_to_clipboard_in_netscape', 'filtered_cookies_to_file_in_netscape'];
         let value, radio, listitem;
         for (value of values) {
             radio = form.querySelector('input[type="radio"][value="' + value + '"]');
@@ -754,7 +768,24 @@
         navigator.clipboard.writeText(text);
     }
 
-    function exportNetscapeCookiesText(exportedCookies) {
+    function saveText(text) {
+        let url;
+        try {
+            const blob = new Blob([text], {type: 'octet/stream'});
+            url = window.URL.createObjectURL(blob);
+        }
+        catch(error) {
+            url = 'data:application/octet-stream;base64,' + btoa(text);
+        }
+
+        const filename = 'cookies.txt';
+        const anchor   = document.createElement('a');
+        anchor.setAttribute('href', url);
+        anchor.setAttribute('download', filename);
+        anchor.click();
+    }
+
+    function formatExportedCookiesInNetscape(exportedCookies) {
         // https://github.com/daftano/cookies.txt/blob/master/src/popup.js
         // http://www.cookiecentral.com/faq/#3.5
 
@@ -787,20 +818,7 @@
             text += "\n";
         }
 
-        let url;
-        try {
-            const blob = new Blob([text], {type: 'octet/stream'});
-            url = window.URL.createObjectURL(blob);
-        }
-        catch(error) {
-            url = 'data:application/octet-stream;base64,' + btoa(text);
-        }
-
-        const filename = 'cookies.txt';
-        const anchor   = document.createElement('a');
-        anchor.setAttribute('href', url);
-        anchor.setAttribute('download', filename);
-        anchor.click();
+        return text
     }
 
     function escapeForPre(text) {
