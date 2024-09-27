@@ -386,21 +386,21 @@
             let exportedCookies;
 
             switch (exportedFormat) {
-                case 'all_json':
+                case 'all_cookies_to_clipboard_in_json':
                     exportedCookies = getExportedCookies(false);
                     copyText(JSON.stringify(exportedCookies, null, 4));
                     sendNotification('Cookies exported to clipboard');
                     break;
-                case 'all_text':
+                case 'all_cookies_to_file_in_netscape':
                     exportedCookies = getExportedCookies(false);
                     exportNetscapeCookiesText(exportedCookies);
                     break;
-                case 'filtered_json':
+                case 'filtered_cookies_to_clipboard_in_json':
                     exportedCookies = getExportedCookies(true);
                     copyText(JSON.stringify(exportedCookies, null, 4));
                     sendNotification('Cookies exported to clipboard');
                     break;
-                case 'filtered_text':
+                case 'filtered_cookies_to_file_in_netscape':
                     exportedCookies = getExportedCookies(true);
                     exportNetscapeCookiesText(exportedCookies);
                     break;
@@ -566,7 +566,7 @@
         let form = template.querySelector('form');
 
         // conditionally hide filtered options when no filter is active
-        const values = ['filtered_json', 'filtered_text'];
+        const values = ['filtered_cookies_to_clipboard_in_json', 'filtered_cookies_to_file_in_netscape'];
         let value, radio, listitem;
         for (value of values) {
             radio = form.querySelector('input[type="radio"][value="' + value + '"]');
