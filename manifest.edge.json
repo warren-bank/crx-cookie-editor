@@ -24,11 +24,11 @@
   },
   "devtools_page": "interface/devtools/devtool.html",
   "permissions": [
-		"<all_urls>",
-		"clipboardWrite",
-		"cookies",
-		"storage",
-		"tabs"
+    "<all_urls>",
+    "clipboardWrite",
+    "cookies",
+    "storage",
+    "tabs"
   ],
   "icons": {
     "16": "icons/cookie-16-filled.png",
