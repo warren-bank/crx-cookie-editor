@@ -322,23 +322,66 @@
             saveCookieForm(document.querySelector('form'));
         });
 
-        document.getElementById('save-import-cookie').addEventListener('click', e => {
+        document.getElementById('save-import-cookie').addEventListener('click', async (e) => {
             let buttonIcon = document.getElementById('save-import-cookie').querySelector('use');
             if (buttonIcon.getAttribute("href") !== "../sprites/solid.svg#file-import") {
                 return;
             }
 
-            let json = document.querySelector('textarea').value;
-            if (!json) {
+            const import_format = document.querySelector('input[type="radio"][name="import-format"]:checked').value;
+            const import_from   = document.querySelector('input[type="radio"][name="import-from"]:checked').value;
+            let importedCookies;
+
+            switch(import_from) {
+                case 'clipboard':
+                    importedCookies = document.querySelector('textarea.clipboard').value;
+                    break;
+                case 'file':
+                    const el = document.querySelector('input[type="file"]');
+                    if (el.files && el.files.length) {
+                        try {
+                            importedCookies = await new Promise((resolve, reject) => {
+                                const file   = el.files[0];
+                                const reader = new FileReader();
+
+                                reader.addEventListener('load',  () => {resolve(reader.result);});
+                                reader.addEventListener('error', () => {reject(new Error('Could not read the file'));});
+                                reader.readAsText(file);
+                            });
+                        }
+                        catch(error) {
+                            sendNotification(e.message);
+                        }
+                    }
+                    else {
+                        sendNotification("Please select a file");
+                    }
+                    break;
+            }
+
+            if (!importedCookies) {
                 return;
             }
 
-            let cookies;
-            try {
-                cookies = JSON.parse(json);
-            } catch (error) {
-                console.log("Couldn't parse Json", error);
-                sendNotification("Could not parse the Json value");
+            switch(import_format) {
+                case 'json':
+                    try {
+                        importedCookies = JSON.parse(importedCookies);
+                    } catch (error) {
+                        console.log("Error parsing JSON value:", importedCookies, error);
+                        sendNotification("Could not parse the JSON value");
+                        buttonIcon.setAttribute("href", "../sprites/solid.svg#times");
+                        setTimeout(() => {
+                            buttonIcon.setAttribute("href", "../sprites/solid.svg#file-export");
+                        }, 1500);
+                        return;
+                    }
+                    break;
+            }
+
+            if (!isArray(importedCookies)) {
+                console.log("Invalid JSON:", importedCookies);
+                sendNotification("The JSON is not valid");
                 buttonIcon.setAttribute("href", "../sprites/solid.svg#times");
                 setTimeout(() => {
                     buttonIcon.setAttribute("href", "../sprites/solid.svg#file-export");
@@ -346,17 +389,7 @@
                 return;
             }
 
-            if (!isArray(cookies)) {
-                console.log("Invalid Json");
-                sendNotification("The Json is not valid");
-                buttonIcon.setAttribute("href", "../sprites/solid.svg#times");
-                setTimeout(() => {
-                    buttonIcon.setAttribute("href", "../sprites/solid.svg#file-export");
-                }, 1500);
-                return;
-            }
-
-            cookies.forEach(cookie => {
+            importedCookies.forEach(cookie => {
                 // Make sure we are using the right store ID. This is in case we are importing from a basic store ID and the
                 // current user is using custom containers
                 cookie.storeId = cookieHandler.currentTab.cookieStoreId;
@@ -377,60 +410,37 @@
         });
 
         document.getElementById('save-export-cookie').addEventListener('click', e => {
-            let buttonIcon = document.getElementById('save-export-cookie').querySelector('use');
+            const buttonIcon = document.getElementById('save-export-cookie').querySelector('use');
             if (buttonIcon.getAttribute("href") !== "../sprites/solid.svg#file-export") {
                 return;
             }
 
-            let exportedFormat = document.querySelector('input[name="export-format"]:checked').value;
+            const export_scope  = document.querySelector('input[type="radio"][name="export-scope"]:checked').value;
+            const export_format = document.querySelector('input[type="radio"][name="export-format"]:checked').value;
+            const export_to     = document.querySelector('input[type="radio"][name="export-to"]:checked').value;
             let exportedCookies;
 
-            switch (exportedFormat) {
-                case 'all_cookies_to_clipboard_in_json':
-                    exportedCookies = getExportedCookies(false);
-                    copyText(JSON.stringify(exportedCookies, null, 4));
-                    sendNotification('Cookies exported to clipboard');
+            exportedCookies = getExportedCookies((export_scope === 'filtered'));
+
+            switch(export_format) {
+                case 'json':
+                    exportedCookies = JSON.stringify(exportedCookies, null, 4);
                     break;
-                case 'all_cookies_to_clipboard_in_request_header':
-                    exportedCookies = getExportedCookies(false);
+                case 'request-header':
                     exportedCookies = formatExportedCookiesInRequestHeader(exportedCookies);
+                    break;
+                case 'netscape':
+                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
+                    break;
+            }
+
+            switch(export_to) {
+                case 'clipboard':
                     copyText(exportedCookies);
                     sendNotification('Cookies exported to clipboard');
                     break;
-                case 'all_cookies_to_clipboard_in_netscape':
-                    exportedCookies = getExportedCookies(false);
-                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
-                    copyText(exportedCookies);
-                    sendNotification('Cookies exported to clipboard');
-                    break;
-                case 'all_cookies_to_file_in_netscape':
-                    exportedCookies = getExportedCookies(false);
-                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
+                case 'file':
                     saveText(exportedCookies);
-                    break;
-                case 'filtered_cookies_to_clipboard_in_json':
-                    exportedCookies = getExportedCookies(true);
-                    copyText(JSON.stringify(exportedCookies, null, 4));
-                    sendNotification('Cookies exported to clipboard');
-                    break;
-                case 'filtered_cookies_to_clipboard_in_request_header':
-                    exportedCookies = getExportedCookies(true);
-                    exportedCookies = formatExportedCookiesInRequestHeader(exportedCookies);
-                    copyText(exportedCookies);
-                    sendNotification('Cookies exported to clipboard');
-                    break;
-                case 'filtered_cookies_to_clipboard_in_netscape':
-                    exportedCookies = getExportedCookies(true);
-                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
-                    copyText(exportedCookies);
-                    sendNotification('Cookies exported to clipboard');
-                    break;
-                case 'filtered_cookies_to_file_in_netscape':
-                    exportedCookies = getExportedCookies(true);
-                    exportedCookies = formatExportedCookiesInNetscape(exportedCookies);
-                    saveText(exportedCookies);
-                    break;
-                default:
                     break;
             }
 
@@ -583,27 +593,54 @@
     }
 
     function createHtmlFormImport() {
-        let template = document.importNode(document.getElementById('tmp-import').content, true);
-        return template.querySelector('form');
+        const template = document.importNode(document.getElementById('tmp-import').content, true);
+        const form = template.querySelector('form');
+
+        // conditionally show input elements
+        const onChange_import_from = function() {
+            const expando_clipboard = form.querySelector('.expando.clipboard');
+            const expando_file      = form.querySelector('.expando.file');
+            const import_from       = form.querySelector('input[type="radio"][name="import-from"]:checked').value;
+
+            switch(import_from) {
+                case 'clipboard':
+                    Animate.closeSlide(expando_file, function() {
+                        Animate.openSlide(expando_clipboard);
+                    });
+                    break;
+                case 'file':
+                    Animate.closeSlide(expando_clipboard, function() {
+                        Animate.openSlide(expando_file);
+                    });
+                    break;
+            }
+        }
+
+        form.querySelectorAll('input[type="radio"][name="import-from"]').forEach(el => {
+            el.addEventListener('change', onChange_import_from);
+        });
+
+        containerCookie.addEventListener('transitionend', onChange_import_from, {
+            'passive': true,
+            'once': true
+        });
+
+        return form;
     }
 
     function createHtmlFormExport() {
-        let template = document.importNode(document.getElementById('tmp-export').content, true);
-        let form = template.querySelector('form');
+        const template = document.importNode(document.getElementById('tmp-export').content, true);
+        const form = template.querySelector('form');
 
         // conditionally hide filtered options when no filter is active
-        const values = ['filtered_cookies_to_clipboard_in_json', 'filtered_cookies_to_clipboard_in_request_header', 'filtered_cookies_to_clipboard_in_netscape', 'filtered_cookies_to_file_in_netscape'];
-        let value, radio, listitem;
-        for (value of values) {
-            radio = form.querySelector('input[type="radio"][value="' + value + '"]');
-            if (radio) {
-                listitem = radio.parentElement;
+        const radio = form.querySelector('input[type="radio"][name="export-scope"][value="filtered"]');
+        if (radio) {
+            const listitem = radio.parentElement;
 
-                if (filteredCookiesRegex) {
-                    listitem.classList.remove('hide');
-                } else {
-                    listitem.classList.add('hide');
-                }
+            if (filteredCookiesRegex) {
+                listitem.classList.remove('hide');
+            } else {
+                listitem.classList.add('hide');
             }
         }
 

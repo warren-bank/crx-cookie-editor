@@ -19,7 +19,7 @@ class Animate
     
         if (el.getAttribute('data-max-height')) {
             // we've already used this before, so everything is setup
-            if (el.style.maxHeight.replace('px', '').replace('%', '') === '0') {
+            if (this.isSlideClosed(el)) {
                 el.style.maxHeight = el.getAttribute('data-max-height');
             } else {
                 elMaxHeight = this.getHeight(el) + 'px';
@@ -71,6 +71,24 @@ class Animate
         setTimeout(function () {
             el.style.maxHeight = nextMaxHeight;
         }, 10);
+    }
+
+    static openSlide(el, callback = null) {
+        if (el && this.isSlideClosed(el))
+            this.toggleSlide(el, callback);
+        else if (callback)
+            callback();
+    }
+
+    static closeSlide(el, callback = null) {
+        if (el && !this.isSlideClosed(el))
+            this.toggleSlide(el, callback);
+        else if (callback)
+            callback();
+    }
+
+    static isSlideClosed(el) {
+        return !el.getAttribute('data-max-height') || !el.style.maxHeight || (el.style.maxHeight.replace('px', '').replace('%', '') === '0');
     }
 
     static transitionPage(container, oldPage, newPage, direction = 'left', callback = null) {

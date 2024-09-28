@@ -215,26 +215,52 @@
     <template id="tmp-import">
         <form class="form container import">
             <div>
-                <label for="content-import">Json</label>
-                <textarea class="json" name="content" id="content-import" placeholder="Paste your Json here"></textarea>
+                <h3>Format:</h3>
+                <ul>
+                    <li><input type="radio" name="import-format" value="json" checked="checked">JSON</input></li>
+                </ul>
+            </div>
+            <div>
+                <h3>From:</h3>
+                <ul>
+                    <li><input type="radio" name="import-from" value="clipboard" checked="checked">clipboard</input></li>
+                    <li><input type="radio" name="import-from" value="file">text file</input></li>
+                </ul>
+            </div>
+            <div class="expando clipboard">
+                <textarea class="clipboard" name="content" id="content-import" placeholder="Paste your cookies here"></textarea>
+            </div>
+            <div class="expando file">
+                <input type="file" accept=".json,.txt" />
             </div>
         </form>
     </template>
 
     <template id="tmp-export">
-      <form class="form container export">
-        <div>
-          <h3>Export:</h3>
-          <ul>
-            <li><input type="radio" name="export-format" value="all_cookies_to_clipboard_in_json" checked="checked">all cookies to clipboard in JSON format</input></li>
-            <li><input type="radio" name="export-format" value="all_cookies_to_clipboard_in_request_header">all cookies to clipboard in request header format</input></li>
-            <li><input type="radio" name="export-format" value="all_cookies_to_file_in_netscape">all cookies to text file in Netscape format</input></li>
-            <li><input type="radio" name="export-format" value="filtered_cookies_to_clipboard_in_json">filtered cookies to clipboard in JSON format</input></li>
-            <li><input type="radio" name="export-format" value="filtered_cookies_to_clipboard_in_request_header">filtered cookies to clipboard in request header format</input></li>
-            <li><input type="radio" name="export-format" value="filtered_cookies_to_file_in_netscape">filtered cookies to text file in Netscape format</input></li>
-          </ul>
-        </div>
-      </form>
+        <form class="form container export">
+            <div>
+                <h3>Export Cookies:</h3>
+                <ul>
+                    <li><input type="radio" name="export-scope" value="all" checked="checked">all</input></li>
+                    <li><input type="radio" name="export-scope" value="filtered">filtered</input></li>
+                </ul>
+            </div>
+            <div>
+                <h3>Format:</h3>
+                <ul>
+                    <li><input type="radio" name="export-format" value="json" checked="checked">JSON</input></li>
+                    <li><input type="radio" name="export-format" value="request-header">request header</input></li>
+                    <li><input type="radio" name="export-format" value="netscape">Netscape</input></li>
+                </ul>
+            </div>
+            <div>
+                <h3>To:</h3>
+                <ul>
+                    <li><input type="radio" name="export-to" value="clipboard" checked="checked">clipboard</input></li>
+                    <li><input type="radio" name="export-to" value="file">text file</input></li>
+                </ul>
+            </div>
+        </form>
     </template>
 
     <template id="tmp-create">

@@ -174,20 +174,24 @@ button:focus {outline:0;}
     resize: none;
 }
 
-#cookie-container form.import textarea.json {
-    height: 360px;
+#cookie-container form.import textarea.clipboard {
+    height: 225px;
     font-family: Consolas,Monaco,monospace;
     white-space: pre;
     overflow:auto;
 }
 
+#cookie-container form.import h3,
 #cookie-container form.export h3 {
     margin: 0 0 0.5em 0;
 }
+#cookie-container form.import ul,
+#cookie-container form.import ul li,
 #cookie-container form.export ul,
 #cookie-container form.export ul li {
     list-style-type: none;
 }
+#cookie-container form.import ul li.hide,
 #cookie-container form.export ul li.hide {
     display: none;
 }
