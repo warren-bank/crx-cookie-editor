@@ -328,6 +328,13 @@
                 return;
             }
 
+            const showErrorIcon = () => {
+                buttonIcon.setAttribute("href", "../sprites/solid.svg#times");
+                setTimeout(() => {
+                    buttonIcon.setAttribute("href", "../sprites/solid.svg#file-import");
+                }, 1500);
+            };
+
             const import_format = document.querySelector('input[type="radio"][name="import-format"]:checked').value;
             const import_from   = document.querySelector('input[type="radio"][name="import-from"]:checked').value;
             let importedCookies;
@@ -370,10 +377,7 @@
                     } catch (error) {
                         console.log("Error parsing JSON value:", importedCookies, error);
                         sendNotification("Could not parse the JSON value");
-                        buttonIcon.setAttribute("href", "../sprites/solid.svg#times");
-                        setTimeout(() => {
-                            buttonIcon.setAttribute("href", "../sprites/solid.svg#file-export");
-                        }, 1500);
+                        showErrorIcon();
                         return;
                     }
                     break;
@@ -382,10 +386,7 @@
             if (!isArray(importedCookies)) {
                 console.log("Invalid JSON:", importedCookies);
                 sendNotification("The JSON is not valid");
-                buttonIcon.setAttribute("href", "../sprites/solid.svg#times");
-                setTimeout(() => {
-                    buttonIcon.setAttribute("href", "../sprites/solid.svg#file-export");
-                }, 1500);
+                showErrorIcon();
                 return;
             }
 
