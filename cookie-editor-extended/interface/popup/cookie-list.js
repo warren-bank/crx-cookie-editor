@@ -64,6 +64,7 @@
                 secure = form.querySelector('input[name="secure"]').checked;
                 httpOnly = form.querySelector('input[name="httpOnly"]').checked;
             }
+
             saveCookie(
                 id,
                 {
@@ -603,9 +604,20 @@
         return cookie.html;
     }
 
-    function createHtmlFormCookie() {
+    function createHtmlFormCookie_basic() {
         let template = document.importNode(document.getElementById('tmp-create').content, true);
         return template.querySelector('form');
+    }
+
+    function createHtmlFormCookie_advanced() {
+        const cookieContainer = new Cookie(null, null, showAllAdvanced);
+        const form = cookieContainer.html.querySelector('form');
+        form.classList.remove('create');
+        return form;
+    }
+
+    function createHtmlFormCookie() {
+        return createHtmlFormCookie_advanced();
     }
 
     function createHtmlFormImport() {

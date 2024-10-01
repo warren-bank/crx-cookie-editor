@@ -1,7 +1,7 @@
 class Cookie {
     constructor (id, cookie, showAdvancedForm) {
-        this.id = id;
-        this.cookie = cookie;
+        this.id = id || '';
+        this.cookie = cookie || Cookie.getEmptyCookie();
         this.guid = Cookie.guid();
         this.baseHtml = false;
         this.showAdvancedForm = showAdvancedForm;
@@ -307,6 +307,21 @@ class Cookie {
         setTimeout(() => {
             node.classList.add('anim-success');
         }, 20);
+    }
+
+    static getEmptyCookie() {
+        return {
+            name: '',
+            value: '',
+            domain: '',
+            path: '',
+            expirationDate: '',
+            sameSite: '',
+            hostOnly: true,
+            session: true,
+            secure: false,
+            httpOnly: false
+        }
     }
 
     static guid() {
