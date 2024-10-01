@@ -66,99 +66,114 @@
             }
             saveCookie(
                 id,
-                name,
-                value,
-                domain,
-                path,
-                expiration,
-                sameSite,
-                hostOnly,
-                session,
-                secure,
-                httpOnly
+                {
+                    name,
+                    value,
+                    domain,
+                    path,
+                    expiration,
+                    sameSite,
+                    hostOnly,
+                    session,
+                    secure,
+                    httpOnly
+                }
             );
-
-            if (form.classList.contains('create')) {
-                showCookiesForTab();
-            }
 
             return false;
         }
 
-        function saveCookie(id, name, value, domain, path, expiration, sameSite, hostOnly, session, secure, httpOnly) {
+        function saveCookie(oldCookieId, newCookie) {
             console.log('saving cookie...');
 
-            let cookieContainer = loadedCookies[id];
-            let cookie = cookieContainer ? cookieContainer.cookie : null;
-            let oldName;
-            let oldHostOnly;
-
-            if (cookie) {
-                oldName = cookie.name;
-                oldHostOnly = cookie.hostOnly;
+            if (newCookie.session) {
+                newCookie.expirationDate = null;
             } else {
-                cookie = {};
-                oldName = name;
-                oldHostOnly = hostOnly;
+                let expirationDate
+                expirationDate = !!newCookie.expiration
+                    ? new Date(newCookie.expiration).getTime()
+                    : NaN;
+                expirationDate = isNaN(expirationDate) ? null : (expirationDate / 1000);
+
+                newCookie.expirationDate = expirationDate;
+                if (!expirationDate) {
+                    newCookie.session = true;
+                }
             }
+            delete newCookie.expiration;
 
-            cookie.name = name;
-            cookie.value = value;
+            const url = getCurrentTabUrl();
+            {
+                const error = Cookie.validate(newCookie, url);
 
-            if (domain !== undefined)
-                cookie.domain = domain;
-            if (path !== undefined)
-                cookie.path = path;
-            if (sameSite !== undefined)
-                cookie.sameSite = sameSite;
-            if (hostOnly !== undefined)
-                cookie.hostOnly = hostOnly;
-            if (session !== undefined)
-                cookie.session = session;
-            if (secure !== undefined)
-                cookie.secure = secure;
-            if (httpOnly !== undefined)
-                cookie.httpOnly = httpOnly;
-
-            if (cookie.session) {
-                cookie.expirationDate = null;
-            } else {
-                cookie.expirationDate = new Date(expiration).getTime() / 1000;
-                if (!cookie.expirationDate) {
-                    cookie.session = true;
+                if (error) {
+                    sendNotification(error);
+                    return;
                 }
             }
 
-            if (oldName !== name || oldHostOnly !== hostOnly) {
-                cookieHandler.removeCookie(oldName, getCurrentTabUrl(), function () {
-                    cookieHandler.saveCookie(cookie, getCurrentTabUrl(), function(error, cookie) {
-                        if (error) {
-                            sendNotification(error);
-                            return;
-                        }
-                        if (browserDetector.isEdge()) {
-                            onCookiesChanged();
-                        }
-                        if (cookieContainer) {
-                            cookieContainer.showSuccessAnimation();
-                        }
-                    });
-                });
-            } else {
-                // Should probably put in a function to prevent duplication
-                cookieHandler.saveCookie(cookie, getCurrentTabUrl(), function(error, cookie) {
-                    if (error) {
-                        sendNotification(error);
-                        return;
-                    }
-                    if (browserDetector.isEdge()) {
-                        onCookiesChanged();
-                    }
+            const allCookieKeys = Object.keys(newCookie);
+            const newCookieId = Cookie.hashCode(newCookie);
+            const oldCookieContainer = oldCookieId ? loadedCookies[oldCookieId] : null;
+            const oldCookie = oldCookieContainer ? oldCookieContainer.cookie : null;
 
-                    if (cookieContainer) {
-                        cookieContainer.showSuccessAnimation();
-                    }
-                });
+            const onSaveCallback = function(error, cookie) {
+                if (error) {
+                    sendNotification(error);
+                    return;
+                }
+                if (browserDetector.isEdge()) {
+                    onCookiesChanged();
+                }
+                if ((oldCookieId === newCookieId) && oldCookieContainer) {
+                    oldCookieContainer.showSuccessAnimation();
+                } else {
+                    showCookiesForTab();
+                }
+            };
+
+            const doSave = function() {
+                cookieHandler.saveCookie(newCookie, url, onSaveCallback);
+            };
+
+            const onRemoveCallback = doSave;
+
+            const doRemove = function() {
+                cookieHandler.removeCookie(oldCookie.name, url, onRemoveCallback);
+            }
+
+            let isUpdated = false;
+            for (let key of allCookieKeys) {
+                // remove undefined keys
+                if (newCookie.hasOwnProperty(key) && (newCookie[key] === undefined)) {
+                    delete newCookie[key];
+                }
+
+                // detect update
+                if (oldCookie && !isUpdated && (newCookie[key] !== oldCookie[key])) {
+                    isUpdated = true;
+                }
+            }
+
+            if (oldCookie) {
+                // edit pre-existing cookie
+
+                if (!isUpdated) {
+                    return;
+                }
+
+                if (oldCookieId === newCookieId) {
+                    doSave();
+                }
+                else {
+                    doRemove();
+                }
+            } else {
+                // add new cookie
+
+                // TODO: prevent duplication?
+
+                doSave();
             }
         }
 

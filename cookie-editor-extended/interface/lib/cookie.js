@@ -330,4 +330,56 @@ class Cookie {
         }
         return hash;
     }
+
+    static validate(cookie, url, emptyValue) {
+        url = new URL(url);
+        let error = false;
+
+        if (!error && !cookie)
+            error = 'Cookie is not defined';
+
+        if (!error) {
+            for (let key of ['name', 'value']) {
+                if (!cookie.hasOwnProperty(key)) {
+                    error = `"${key}" is required`;
+                    break;
+                }
+            }
+        }
+
+        if (!error && !cookie.name)
+            error = 'value for "name" is required'
+
+        if (!error && !cookie.hostOnly && cookie.domain) {
+            let domain = cookie.domain.trim();
+            if (!domain) {
+                cookie.domain = emptyValue;
+                cookie.hostOnly = true;
+            }
+            else if (domain !== url.hostname) {
+                if (domain[0] !== '.') {
+                    domain = '.' + domain;
+                }
+                const hostname = '.' + url.hostname;
+
+                if (!hostname.endsWith(domain))
+                    error = '"domain" is not valid for current URL'
+            }
+        }
+
+        if (!error && cookie.path) {
+            let path = cookie.path.trim();
+            if (!path) {
+                cookie.path = emptyValue;
+            }
+            else if (path !== url.pathname) {
+                const pathname = url.pathname.replace(new RegExp('/[^/]*$'), '') || '/';
+
+                if (!pathname.startsWith(path))
+                    error = '"path" is not valid for current URL'
+            }
+        }
+
+        return error;
+    }
 }
