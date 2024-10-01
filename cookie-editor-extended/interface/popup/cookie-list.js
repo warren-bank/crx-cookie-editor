@@ -166,12 +166,12 @@
             const exportedCookies = [];
             for (let cookieId in loadedCookies) {
                 let exportedCookie = loadedCookies[cookieId].cookie;
-                exportedCookie.storeId = null;
-                if (exportedCookie.sameSite === 'unspecified') {
-                    exportedCookie.sameSite = null;
-                }
                 if (!filter || !filteredCookiesRegex || exportedCookie.name.match(filteredCookiesRegex)) {
-                  exportedCookies.push(exportedCookie);
+                    exportedCookie = Object.assign({}, exportedCookie, {storeId: null});
+                    if (exportedCookie.sameSite === 'unspecified') {
+                        exportedCookie.sameSite = null;
+                    }
+                    exportedCookies.push(exportedCookie);
                 }
             }
             return exportedCookies;
