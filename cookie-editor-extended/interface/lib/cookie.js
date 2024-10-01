@@ -354,8 +354,8 @@ class Cookie {
             error = 'Cookie is not defined';
 
         if (!error) {
-            for (let key of ['name', 'value']) {
-                if (!cookie.hasOwnProperty(key)) {
+            for (let key of ['Name', 'Value']) {
+                if (!cookie.hasOwnProperty(key.toLowerCase())) {
                     error = `"${key}" is required`;
                     break;
                 }
@@ -363,7 +363,7 @@ class Cookie {
         }
 
         if (!error && !cookie.name)
-            error = 'value for "name" is required'
+            error = '"Name" requires a non-empty value';
 
         if (!error && !cookie.hostOnly && cookie.domain) {
             let domain = cookie.domain.trim();
@@ -377,8 +377,11 @@ class Cookie {
                 }
                 const hostname = '.' + url.hostname;
 
-                if (!hostname.endsWith(domain))
-                    error = '"domain" is not valid for current URL'
+                if (domain.split('.').length <= 2)
+                    error = '"Domain" does not contain enough levels';
+
+                else if (!hostname.endsWith(domain))
+                    error = '"Domain" is not valid for current URL';
             }
         }
 
@@ -391,9 +394,12 @@ class Cookie {
                 const pathname = url.pathname.replace(new RegExp('/[^/]*$'), '') || '/';
 
                 if (!pathname.startsWith(path))
-                    error = '"path" is not valid for current URL'
+                    error = '"Path" is not valid for current URL';
             }
         }
+
+        if (!error && cookie.secure && (!url.protocol || (url.protocol.toLowerCase() !== 'https:')))
+            error = '"Secure" is not valid for the current URL';
 
         return error;
     }
