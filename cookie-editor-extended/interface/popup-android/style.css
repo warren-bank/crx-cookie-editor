@@ -49,19 +49,17 @@ svg.icon {
     margin-right: 10px;
     height: 2.259em;
 }
-#pageTitle h1, #pageTitle h2 {
+#pageTitle h1,
+#pageTitle h2 {
     margin: 0;
     padding: 0;
 }
-
 #pageTitle h1 {
     font-size: 1.25em;
 }
-
 #pageTitle #searchContainer {
     width: 100%;
-    margin: auto;
-    padding: 5px 20px;
+    padding: 5px 0 5px 20px;
 }
 #pageTitle #searchContainer.hide {
     display: none;
@@ -70,12 +68,25 @@ svg.icon {
     width: 100%;
 }
 
+#toggles-container {
+    padding: 0.5em;
+    user-select: none;
+}
+#toggles-container > div + div {
+  margin-top: 0.25em;
+}
+#toggles-container label {
+    cursor: pointer;
+}
+#toggles-container input {
+    vertical-align: middle;
+}
+
 #cookie-container {
     overflow-y: auto;
     background-color: #eaeaea;
     flex: 1 1;
 }
-
 #cookie-container > .container {
     padding: 15px;
     height: 100%;
@@ -394,11 +405,6 @@ label {
     100% {background-color: transparent; }
 }
 
-#advanced-toggle-all {
-    float: right;
-    display: none;
-}
-
 .advanced-form {
     display: none;
 }
@@ -416,21 +422,6 @@ label {
     color: #777;
     user-select: none;
     display: inline-block;
-}
-
-#advanced-toggle-all {
-    position: absolute;
-    right: 15px;
-    top: 10px;
-    user-select: none;
-}
-#advanced-toggle-all label {
-    cursor: pointer;
-}
-#advanced-toggle-all input {
-    vertical-align: middle;
-    position: relative;
-    bottom: 2px;
 }
 
 .checkbox-list {
