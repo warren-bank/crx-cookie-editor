@@ -235,7 +235,7 @@ label {
     display: none;
 }
 
-.btns button.delete {
+.btns button {
     background-color: #fbfbfb;
     border: 1px solid #b1b1b1;
     height: 24px;
@@ -245,9 +245,13 @@ label {
     transition-property: box-shadow, border;
 }
 
-.btns button.delete::-moz-focus-inner {
+.btns button::-moz-focus-inner {
     border: 0;
     outline: 0;
+}
+
+.btns button + button {
+    margin-left: 4px;
 }
 
 .action-btns button {

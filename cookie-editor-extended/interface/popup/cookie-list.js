@@ -30,6 +30,14 @@
             parent.querySelector('.header').classList.toggle('active');
         }
 
+        function copyButton(e) {
+            e.preventDefault();
+            console.log('copying cookie value to clipboard...');
+            const listElement = e.target.closest('li');
+            copyCookie(listElement.id);
+            return false;
+        }
+
         function deleteButton(e) {
             e.preventDefault();
             console.log('removing cookie...');
@@ -205,6 +213,9 @@
 
                 if (target.classList.contains('header')) {
                     return expandCookie(e);
+                }
+                if (target.classList.contains('copy')) {
+                    return copyButton(e);
                 }
                 if (target.classList.contains('delete')) {
                     return deleteButton(e);
@@ -673,6 +684,17 @@
         }
 
         return form;
+    }
+
+    function copyCookie(cookieId) {
+        const cookieContainer = loadedCookies[cookieId];
+        if (!cookieContainer) {
+            return;
+        }
+
+        const value = cookieContainer.cookie.value;
+        copyText(value);
+        sendNotification('Cookie value copied to clipboard');
     }
 
     function removeCookie(cookieId, callback) {
