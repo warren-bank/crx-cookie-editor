@@ -352,11 +352,6 @@
         });
 
         document.getElementById('export-cookies').addEventListener('click', () => {
-            if (areNoCookies()) {
-                sendNotification('There are no cookies to export');
-                return;
-            }
-
             if (disableButtons) {
                 return;
             }
@@ -474,7 +469,7 @@
 
                 remaining--;
                 if (remaining <= 0) {
-                    const message = created + ' ' + ((created.length === 1) ? 'cookie was' : 'cookies were') + ' created';
+                    const message = created + ' ' + ((created === 1) ? 'cookie was' : 'cookies were') + ' created';
                     sendNotification(message);
                     showCookiesForTab();
                 }
@@ -522,6 +517,17 @@
             const export_format = document.querySelector('input[type="radio"][name="export-format"]:checked').value;
             const export_to     = document.querySelector('input[type="radio"][name="export-to"]:checked').value;
             let exportedCookies;
+
+            // sanity check: this should never happen
+            switch(export_scope) {
+                case 'tab-all':
+                case 'tab-filtered':
+                    if (areNoCookies()) {
+                        sendNotification('There are no cookies to export');
+                        return;
+                    }
+                    break;
+            }
 
             exportedCookies = await getExportedCookies(export_scope);
 
@@ -745,16 +751,34 @@
     function createHtmlFormExport() {
         const template = document.importNode(document.getElementById('tmp-export').content, true);
         const form = template.querySelector('form');
+        const noCookies = areNoCookies();
+        let radio, listitem;
 
-        // conditionally hide filtered options when no filter is active
-        const radio = form.querySelector('input[type="radio"][name="export-scope"][value="tab-filtered"]');
-        if (radio) {
-            const listitem = radio.parentElement;
-
-            if (filteredCookiesRegex) {
-                listitem.classList.remove('hide');
-            } else {
+        // conditionally hide tab scope when tab has no cookies
+        if (noCookies) {
+            radio = form.querySelector('input[type="radio"][name="export-scope"][value="tab-all"]');
+            if (radio) {
+                radio.checked = false;
+                listitem = radio.parentElement;
                 listitem.classList.add('hide');
+            }
+        }
+
+        // conditionally hide filtered scope when tab has no cookies, or no filter is active
+        if (noCookies || !filteredCookiesRegex) {
+            radio = form.querySelector('input[type="radio"][name="export-scope"][value="tab-filtered"]');
+            if (radio) {
+                radio.checked = false;
+                listitem = radio.parentElement;
+                listitem.classList.add('hide');
+            }
+        }
+
+        // conditionally update the scope option selected by default
+        if (noCookies) {
+            radio = form.querySelector('input[type="radio"][name="export-scope"][value="browser-all"]');
+            if (radio) {
+                radio.checked = true;
             }
         }
 
