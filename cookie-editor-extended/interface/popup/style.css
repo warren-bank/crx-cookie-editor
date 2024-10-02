@@ -514,16 +514,20 @@ body, .expando, #cookie-container {
     color: #888;
 }
 
-#advanced-toggle-all {
+#toggle-all-container {
     position: absolute;
     right: 15px;
     top: 10px;
     user-select: none;
 }
-#advanced-toggle-all label {
+#toggle-all-container > label {
     cursor: pointer;
+    display: inline-block;
 }
-#advanced-toggle-all input {
+#toggle-all-container > label + label {
+    margin-left: 1em;
+}
+#toggle-all-container > label > input {
     vertical-align: middle;
     position: relative;
     bottom: 2px;

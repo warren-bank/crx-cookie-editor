@@ -27,6 +27,12 @@
                 Show Advanced
             </label>
         </div>
+        <div id="select-toggle-all">
+            <label>
+                <input type="checkbox" checked="checked" />
+                Select All
+            </label>
+        </div>
     </div>
 
     <div id="cookie-container"></div>
@@ -140,6 +146,8 @@
                     <use href="../sprites/solid.svg#angle-down"></use>
                 </svg>
                 <span class="header-name"></span>
+            </div>
+            <div class="expando">
                 <div class="btns">
                     <button class="copy" data-tooltip-left="Copy Value">
                         <svg class="icon">
@@ -153,8 +161,6 @@
                     </button>
                     <input class="filter-include" type="checkbox" checked="checked" title="Include in filtered export" />
                 </div>
-            </div>
-            <div class="expando">
                 <div class="wrapper">
                     <div class="action-btns">
                         <button class="delete" data-tooltip="Delete">

@@ -176,7 +176,7 @@ class Cookie {
             advancedToggleButton.textContent = 'Hide Advanced';
         }
 
-        var filterIncludeCheckbox = this.baseHtml.querySelector('.header > .btns > input[type="checkbox"].filter-include');
+        var filterIncludeCheckbox = this.baseHtml.querySelector('.btns > input[type="checkbox"].filter-include');
         filterIncludeCheckbox.checked = this.filterInclude;
         filterIncludeCheckbox.addEventListener('change', () => {
             this.filterInclude = filterIncludeCheckbox.checked;
@@ -283,7 +283,7 @@ class Cookie {
     updateFilterInclude(filterInclude) {
         this.filterInclude = !!filterInclude;
 
-        var filterIncludeCheckbox = this.baseHtml.querySelector('.header > .btns > input[type="checkbox"].filter-include');
+        var filterIncludeCheckbox = this.baseHtml.querySelector('.btns > input[type="checkbox"].filter-include');
         filterIncludeCheckbox.checked = this.filterInclude;
     }
 

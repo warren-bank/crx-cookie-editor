@@ -13,16 +13,20 @@
     <div id="pageTitle">
         <h1 class="container">Cookie Editor</h1>
 
-        <div id="advanced-toggle-all">
-            <label>
+        <div id="toggle-all-container">
+            <label id="advanced-toggle-all">
                 <input type="checkbox" />
                 Show Advanced
             </label>
+            <label id="select-toggle-all">
+                <input type="checkbox" checked="checked" />
+                Select All
+            </label>
         </div>
 
-      <div id="searchContainer">
-        <input id="searchField" type="text" placeholder="Search" />
-      </div>
+        <div id="searchContainer">
+            <input id="searchField" type="text" placeholder="Search" />
+        </div>
     </div>
 
     <div id="cookie-container"></div>

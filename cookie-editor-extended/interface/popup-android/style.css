@@ -144,16 +144,11 @@ form.import > div {
     -moz-user-select: none;
     user-select: none;
 }
-#cookie-container li .header .btns {
-    display: none;
-}
-
 #cookie-container li .header .icon {
     -moz-transition: transform 150ms ease-in 0s;
     transition: transform 150ms ease-in 0s;
     margin-right: 10px;
 }
-
 #cookie-container li .header.active .icon {
     -moz-transform: rotate(180deg);
     transform: rotate(180deg);
@@ -162,10 +157,16 @@ form.import > div {
 #cookie-container li .expando {
     max-height: 0;
     display: flex;
+    flex-direction: column;
     overflow: hidden;
 }
-
-#cookie-container li .expando .wrapper {
+#cookie-container li .expando > .btns {
+    text-align: right;
+}
+#cookie-container li .expando > .btns > button.delete {
+    display: none;
+}
+#cookie-container li .expando > .wrapper {
     flex: 1;
     padding: 1.25em 1em;
     padding-bottom: 0.4em;

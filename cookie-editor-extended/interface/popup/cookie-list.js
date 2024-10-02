@@ -568,6 +568,14 @@
             showCookiesForTab(true);
         });
 
+        document.querySelector('#select-toggle-all input').addEventListener('change', function() {
+            const selectAll = this.checked;
+            for (let cookieId in loadedCookies) {
+                loadedCookies[cookieId].updateFilterInclude(selectAll);
+            }
+            showCookiesForTab(true);
+        });
+
         notificationElement.addEventListener('animationend', e => {
             if (notificationElement.classList.contains('fadeInUp')) {
                 return;
