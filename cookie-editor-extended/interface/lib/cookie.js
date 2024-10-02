@@ -324,6 +324,29 @@ class Cookie {
         }
     }
 
+    static getValidUrl(cookie) {
+        let url;
+
+        // protocol
+        url = (cookie.secure)
+            ? 'https'
+            : 'http';
+
+        url += '://';
+
+        // hostname
+        url += (cookie.hostOnly)
+            ? cookie.domain
+            : (cookie.domain[0] === '.')
+                ? cookie.domain.substring(1, cookie.domain.length)
+                : cookie.domain;
+
+        // pathname
+        url += (cookie.path || '/');
+
+        return url;
+    }
+
     static guid() {
         function s4() {
             return Math.floor((1 + Math.random()) * 0x10000)
@@ -349,6 +372,9 @@ class Cookie {
     static validate(cookie, url, emptyValue) {
         url = new URL(url);
         let error = false;
+
+        if (!error && (!url || !url.protocol || !url.protocol.toLowerCase().startsWith('http')))
+            error = 'URL protocol in current tab does not support cookies';
 
         if (!error && !cookie)
             error = 'Cookie is not defined';
@@ -382,6 +408,16 @@ class Cookie {
 
                 else if (!hostname.endsWith(domain))
                     error = '"Domain" is not valid for current URL';
+            }
+        }
+
+        if (!error && cookie.hostOnly && cookie.domain) {
+            let domain = cookie.domain.trim();
+            if (!domain) {
+                cookie.domain = emptyValue;
+            }
+            else if (domain !== url.hostname) {
+                error = '"Domain" is not valid for current URL';
             }
         }
 

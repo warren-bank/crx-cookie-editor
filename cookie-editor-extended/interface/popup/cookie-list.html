@@ -210,6 +210,13 @@
     <template id="tmp-import">
         <form class="form container import">
             <div>
+                <h3>Import Cookies:</h3>
+                <ul>
+                    <li><input type="radio" name="import-scope" value="browser" checked="checked">to browser in current privacy context</input></li>
+                    <li><input type="radio" name="import-scope" value="tab">to current tab</input></li>
+                </ul>
+            </div>
+            <div>
                 <h3>Format:</h3>
                 <ul>
                     <li><input type="radio" name="import-format" value="json" checked="checked">JSON</input></li>

@@ -406,6 +406,7 @@
                 }, 1500);
             };
 
+            const import_scope  = document.querySelector('input[type="radio"][name="import-scope"]:checked').value;
             const import_format = document.querySelector('input[type="radio"][name="import-format"]:checked').value;
             const import_from   = document.querySelector('input[type="radio"][name="import-from"]:checked').value;
             let importedCookies;
@@ -461,6 +462,24 @@
                 return;
             }
 
+            const url_scope = (import_scope === 'tab')
+                ? getCurrentTabUrl()
+                : null;
+
+            let remaining = importedCookies.length;
+            let created   = 0;
+
+            const onImportComplete = (success) => {
+                if (success) created++;
+
+                remaining--;
+                if (remaining <= 0) {
+                    const message = created + ' ' + ((created.length === 1) ? 'cookie was' : 'cookies were') + ' created';
+                    sendNotification(message);
+                    showCookiesForTab();
+                }
+            };
+
             importedCookies.forEach(cookie => {
                 // Make sure we are using the right store ID. This is in case we are importing from a basic store ID and the
                 // current user is using custom containers
@@ -470,15 +489,27 @@
                     cookie.sameSite = null;
                 }
 
-                cookieHandler.saveCookie(cookie, getCurrentTabUrl(), function(error, cookie) {
+                if (import_scope === 'tab') {
+                    const error = Cookie.validate(cookie, url_scope);
+
                     if (error) {
-                        sendNotification(error);
+                        const message = JSON.stringify({domain: cookie.domain, name: cookie.name}) + "\n\n" + error;
+                        sendNotification(message);
+                        onImportComplete(false);
+                        return;
                     }
+                }
+
+                const url = url_scope || Cookie.getValidUrl(cookie);
+
+                cookieHandler.saveCookie(cookie, url, function(error, cookie) {
+                    if (error) {
+                        const message = JSON.stringify({domain: cookie.domain, name: cookie.name}) + "\n\n" + error;
+                        sendNotification(message);
+                    }
+                    onImportComplete(!error);
                 });
             });
-
-            sendNotification('Cookies were created');
-            showCookiesForTab();
         });
 
         document.getElementById('save-export-cookie').addEventListener('click', async (e) => {
@@ -756,7 +787,7 @@
                 return;
             }
 
-            console.log('removed successfuly', {name, url});
+            console.log('removed successfully', {name, url});
 
             cookieContainer.removeHtml(() => {
                 if (areNoCookies()) {
