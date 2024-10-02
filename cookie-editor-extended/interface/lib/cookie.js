@@ -300,6 +300,19 @@ class Cookie {
             advancedForm.classList.remove('show');
             advancedToggleButton.textContent = 'Show Advanced';
         }
+
+        // reset expando
+        var expandoDiv = this.baseHtml.querySelector('div.expando[data-max-height]');
+        if (expandoDiv) {
+            expandoDiv.removeAttribute('data-max-height');
+            expandoDiv.removeAttribute('style');
+        }
+
+        // reset expando trigger
+        var expandoTriggerDiv = this.baseHtml.querySelector('div.header.container.active');
+        if (expandoTriggerDiv) {
+            expandoTriggerDiv.classList.remove('active');
+        }
     }
 
     removeHtml(callback = null) {
