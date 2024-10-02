@@ -186,19 +186,63 @@
             }
         }
 
-        function getExportedCookies(filter) {
-            const exportedCookies = [];
-            for (let cookieId in loadedCookies) {
-                let exportedCookie = loadedCookies[cookieId].cookie;
-                if (!filter || !filteredCookiesRegex || exportedCookie.name.match(filteredCookiesRegex)) {
-                    exportedCookie = Object.assign({}, exportedCookie, {storeId: null});
-                    if (exportedCookie.sameSite === 'unspecified') {
-                        exportedCookie.sameSite = null;
-                    }
-                    exportedCookies.push(exportedCookie);
+        function getExportedCookies(export_scope) {
+            return new Promise((resolve, reject) => {
+                switch(export_scope) {
+                    case 'browser-all':
+                        if (browserDetector.isFirefox()) {
+                            browserDetector.getApi().cookies.getAllCookieStores()
+                            .then(cookieStores => {
+                                const cookiePromises = cookieStores.map(cookieStore => browserDetector.getApi().cookies.getAll({storeId: cookieStore.id}));
+
+                                return Promise.all(cookiePromises)
+                            })
+                            .then(cookieArrays => {
+                                const exportedCookies = [].concat.apply([], cookieArrays);
+
+                                resolve(exportedCookies);
+                            })
+                            .catch(reject);
+                        } else {
+                            browserDetector.getApi().cookies.getAllCookieStores((cookieStores) => {
+                                const exportedCookies = [];
+                                let remaining = cookieStores.length;
+
+                                const cookieCallback = (cookieArray) => {
+                                    exportedCookies.push.apply(exportedCookies, cookieArray);
+
+                                    remaining--;
+                                    if (remaining <= 0) {
+                                        resolve(exportedCookies);
+                                    }
+                                }
+
+                                for (let cookieStore of cookieStores) {
+                                    browserDetector.getApi().cookies.getAll({storeId: cookieStore.id}, cookieCallback);
+                                }
+                            });
+                        }
+                        break;
+                    case 'tab-all':
+                    case 'tab-filtered':
+                        const filter = (export_scope === 'tab-filtered');
+                        const exportedCookies = [];
+                        for (let cookieId in loadedCookies) {
+                            let exportedCookie = loadedCookies[cookieId].cookie;
+                            if (!filter || !filteredCookiesRegex || exportedCookie.name.match(filteredCookiesRegex)) {
+                                exportedCookie = Object.assign({}, exportedCookie, {storeId: null});
+                                if (exportedCookie.sameSite === 'unspecified') {
+                                    exportedCookie.sameSite = null;
+                                }
+                                exportedCookies.push(exportedCookie);
+                            }
+                        }
+                        resolve(exportedCookies);
+                        break;
+                    default:
+                        reject(new Error('invalid export scope: ' + export_scope));
                 }
-            }
-            return exportedCookies;
+            });
         }
 
         if (containerCookie) {
@@ -437,7 +481,7 @@
             showCookiesForTab();
         });
 
-        document.getElementById('save-export-cookie').addEventListener('click', e => {
+        document.getElementById('save-export-cookie').addEventListener('click', async (e) => {
             const buttonIcon = document.getElementById('save-export-cookie').querySelector('use');
             if (buttonIcon.getAttribute("href") !== "../sprites/solid.svg#file-export") {
                 return;
@@ -448,7 +492,7 @@
             const export_to     = document.querySelector('input[type="radio"][name="export-to"]:checked').value;
             let exportedCookies;
 
-            exportedCookies = getExportedCookies((export_scope === 'filtered'));
+            exportedCookies = await getExportedCookies(export_scope);
 
             switch(export_format) {
                 case 'json':
@@ -672,7 +716,7 @@
         const form = template.querySelector('form');
 
         // conditionally hide filtered options when no filter is active
-        const radio = form.querySelector('input[type="radio"][name="export-scope"][value="filtered"]');
+        const radio = form.querySelector('input[type="radio"][name="export-scope"][value="tab-filtered"]');
         if (radio) {
             const listitem = radio.parentElement;
 
