@@ -1,6 +1,6 @@
 {
   "name": "Cookie Editor - Extended",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "manifest_version": 2,
   "description": "Simple yet powerful Cookie Editor that allow you to quickly create, edit and delete cookies without leaving your tab.",
   "icons": {
