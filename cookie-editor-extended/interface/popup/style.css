@@ -250,7 +250,8 @@ label {
     outline: 0;
 }
 
-.btns button + button {
+.btns button + button,
+.btns button + input {
     margin-left: 4px;
 }
 

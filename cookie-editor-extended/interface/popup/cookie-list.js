@@ -224,20 +224,14 @@
                         }
                         break;
                     case 'tab-all':
+                        resolve(
+                            getUnfilteredCookiesForExport()
+                        );
+                        break;
                     case 'tab-filtered':
-                        const filter = (export_scope === 'tab-filtered');
-                        const exportedCookies = [];
-                        for (let cookieId in loadedCookies) {
-                            let exportedCookie = loadedCookies[cookieId].cookie;
-                            if (!filter || !filteredCookiesRegex || exportedCookie.name.match(filteredCookiesRegex)) {
-                                exportedCookie = Object.assign({}, exportedCookie, {storeId: null});
-                                if (exportedCookie.sameSite === 'unspecified') {
-                                    exportedCookie.sameSite = null;
-                                }
-                                exportedCookies.push(exportedCookie);
-                            }
-                        }
-                        resolve(exportedCookies);
+                        resolve(
+                            getFilteredCookiesForExport()
+                        );
                         break;
                     default:
                         reject(new Error('invalid export scope: ' + export_scope));
@@ -311,26 +305,30 @@
                 buttonIcon.setAttribute("href", "../sprites/solid.svg#trash");
             }, 1500);
 
-            if (loadedCookies) {
-                let cookieContainer;
-                for (let cookieId in loadedCookies) {
-                    cookieContainer = loadedCookies[cookieId];
+            const filteredCookieIds = getFilteredCookieIds();
+            const isFiltered = (filteredCookieIds.length < getUnfilteredCookiesCount());
 
-                    if (!filteredCookiesRegex || cookieContainer.cookie.name.match(filteredCookiesRegex)) {
-                        removeCookie(cookieId);
+            let remaining = filteredCookieIds.length;
+            const onRemoveCallback = () => {
+                remaining--;
+
+                if (remaining <= 0) {
+                    sendNotification('All ' + (isFiltered ? 'filtered ' : '') + 'cookies were deleted');
+
+                    // Remove the search filter if all matching cookies were deleted
+                    if (filteredCookiesRegex) {
+                        const visibleCookiesCount = getFilteredCookiesCount(/* skipSearchFilter */ false, /* skipCheckboxFilter */ true);
+                        if (!visibleCookiesCount) {
+                            document.getElementById('searchField').value = '';
+                            filteredCookiesRegex = null;
+                            filterCookies();
+                        }
                     }
                 }
-            }
+            };
 
-            sendNotification('All ' + (filteredCookiesRegex ? 'filtered ' : '') + 'cookies were deleted');
-
-            // judgement call:
-            //   Personally, I feel that it's bad UI to show an empty filtered list.
-            //   Better to remove the filter.
-            if (filteredCookiesRegex) {
-                document.getElementById('searchField').value = '';
-                filteredCookiesRegex = null;
-                filterCookies();
+            for (let cookieId of filteredCookieIds) {
+                removeCookie(cookieId, onRemoveCallback);
             }
         });
 
@@ -595,6 +593,81 @@
     });
 
     // == End document ready == //
+    // == Start loadedCookies filters == //
+
+    function areNoCookies() {
+        return !getUnfilteredCookiesCount();
+    }
+
+    function getFilteredCookieIds(skipSearchFilter, skipCheckboxFilter) {
+        const filteredCookieIds = [];
+        let cookieContainer, passesFilter;
+
+        for (let cookieId in loadedCookies) {
+            cookieContainer = loadedCookies[cookieId];
+            passesFilter = true
+                && (
+                    skipSearchFilter ||
+                    !cookieContainer.html.classList.contains('hide')
+                )
+                && (
+                    skipCheckboxFilter ||
+                    cookieContainer.html.querySelector('.header > .btns > input[type="checkbox"].filter-include').checked
+                );
+
+            if (passesFilter) {
+                filteredCookieIds.push(cookieId);
+            }
+        }
+        return filteredCookieIds;
+    }
+
+    function getFilteredCookies(skipSearchFilter, skipCheckboxFilter) {
+        const filteredCookies = [];
+        const filteredCookieIds = getFilteredCookieIds(skipSearchFilter, skipCheckboxFilter);
+        let cookieContainer, filteredCookie;
+
+        for (let cookieId of filteredCookieIds) {
+            cookieContainer = loadedCookies[cookieId];
+
+            filteredCookie = Object.assign({}, cookieContainer.cookie);
+            filteredCookies.push(filteredCookie);
+        }
+        return filteredCookies;
+    }
+
+    function getFilteredCookiesCount(skipSearchFilter, skipCheckboxFilter) {
+        const filteredCookies = getFilteredCookies(skipSearchFilter, skipCheckboxFilter);
+        return filteredCookies.length;
+    }
+
+    function getFilteredCookiesForExport(skipSearchFilter, skipCheckboxFilter) {
+        const filteredCookies = getFilteredCookies(skipSearchFilter, skipCheckboxFilter);
+        for (let filteredCookie of filteredCookies) {
+            filteredCookie.storeId = null;
+
+            if (filteredCookie.sameSite === 'unspecified') {
+                filteredCookie.sameSite = null;
+            }
+        }
+        return filteredCookies;
+    }
+
+    function getUnfilteredCookies() {
+        const unfilteredCookies = getFilteredCookies(true, true);
+        return unfilteredCookies;
+    }
+
+    function getUnfilteredCookiesCount() {
+        return Object.keys(loadedCookies).length;
+    }
+
+    function getUnfilteredCookiesForExport() {
+        const unfilteredCookies = getFilteredCookiesForExport(true, true);
+        return unfilteredCookies;
+    }
+
+    // == End loadedCookies filters == //
 
     function showCookiesForTab() {
         if (!cookieHandler.currentTab) {
@@ -765,7 +838,7 @@
         }
 
         // conditionally hide filtered scope when tab has no cookies, or no filter is active
-        if (noCookies || !filteredCookiesRegex) {
+        if (noCookies || (getUnfilteredCookiesCount() === getFilteredCookiesCount())) {
             radio = form.querySelector('input[type="radio"][name="export-scope"][value="tab-filtered"]');
             if (radio) {
                 radio.checked = false;
@@ -798,7 +871,14 @@
 
     function removeCookie(cookieId, callback) {
         const cookieContainer = loadedCookies[cookieId];
+        const doCallback = () => {
+            if (callback) {
+                callback();
+            }
+        };
+
         if (!cookieContainer) {
+            doCallback();
             return;
         }
 
@@ -808,6 +888,7 @@
         cookieHandler.removeCookie(name, url, function (errorMessage, cookieResponse) {
             if (errorMessage) {
                 console.log('error removing cookie', {name, url}, errorMessage);
+                doCallback();
                 return;
             }
 
@@ -824,9 +905,7 @@
                 onCookiesChanged();
             }
 
-            if (callback) {
-                callback();
-            }
+            doCallback();
         });
     }
 
@@ -874,10 +953,6 @@
         }
 
         filterCookies();
-    }
-
-    function areNoCookies() {
-        return (!Object.keys(loadedCookies).length);
     }
 
     function onCookieHandlerReady() {
