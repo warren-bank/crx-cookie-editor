@@ -5,6 +5,7 @@ class Cookie {
         this.guid = Cookie.guid();
         this.baseHtml = false;
         this.showAdvancedForm = showAdvancedForm;
+        this.filterInclude = true;
     }
 
     get isGenerated() {
@@ -174,6 +175,12 @@ class Cookie {
             advancedForm.classList.add('show');
             advancedToggleButton.textContent = 'Hide Advanced';
         }
+
+        var filterIncludeCheckbox = this.baseHtml.querySelector('.header > .btns > input[type="checkbox"].filter-include');
+        filterIncludeCheckbox.checked = this.filterInclude;
+        filterIncludeCheckbox.addEventListener('change', () => {
+            this.filterInclude = filterIncludeCheckbox.checked;
+        });
     }
 
     updateName() {
@@ -271,6 +278,28 @@ class Cookie {
 
         this.animateChangeOnNode(header);
         this.animateChangeOnNode(valueInput);
+    }
+
+    updateFilterInclude(filterInclude) {
+        this.filterInclude = !!filterInclude;
+
+        var filterIncludeCheckbox = this.baseHtml.querySelector('.header > .btns > input[type="checkbox"].filter-include');
+        filterIncludeCheckbox.checked = this.filterInclude;
+    }
+
+    updateShowAdvancedForm(showAdvancedForm) {
+        this.showAdvancedForm = showAdvancedForm;
+
+        var advancedForm = this.baseHtml.querySelector('form .advanced-form');
+        var advancedToggleButton = this.baseHtml.querySelector('form .advanced-toggle');
+        if (this.showAdvancedForm) {
+            advancedForm.classList.add('show');
+            advancedToggleButton.textContent = 'Hide Advanced';
+        }
+        else {
+            advancedForm.classList.remove('show');
+            advancedToggleButton.textContent = 'Show Advanced';
+        }
     }
 
     removeHtml(callback = null) {

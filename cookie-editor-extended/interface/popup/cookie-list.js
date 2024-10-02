@@ -367,13 +367,13 @@
         });
 
         document.getElementById('return-list-add').addEventListener('click', () => {
-            showCookiesForTab();
+            showCookiesForTab(true);
         });
         document.getElementById('return-list-import').addEventListener('click', () => {
-            showCookiesForTab();
+            showCookiesForTab(true);
         });
         document.getElementById('return-list-export').addEventListener('click', () => {
-            showCookiesForTab();
+            showCookiesForTab(true);
         });
 
         containerCookie.addEventListener('submit', e => {
@@ -529,6 +529,11 @@
 
             exportedCookies = await getExportedCookies(export_scope);
 
+            if (!exportedCookies || !exportedCookies.length) {
+                sendNotification('There are no cookies to export');
+                return;
+            }
+
             switch(export_format) {
                 case 'json':
                     exportedCookies = JSON.stringify(exportedCookies, null, 4);
@@ -551,13 +556,16 @@
                     break;
             }
 
-            showCookiesForTab();
+            showCookiesForTab(true);
         });
 
         document.querySelector('#advanced-toggle-all input').addEventListener('change', function() {
             showAllAdvanced = this.checked;
             browserDetector.getApi().storage.local.set({showAllAdvanced: showAllAdvanced});
-            showCookiesForTab();
+            for (let cookieId in loadedCookies) {
+                loadedCookies[cookieId].updateShowAdvancedForm(showAllAdvanced);
+            }
+            showCookiesForTab(true);
         });
 
         notificationElement.addEventListener('animationend', e => {
@@ -608,11 +616,12 @@
             passesFilter = true
                 && (
                     skipSearchFilter ||
-                    !cookieContainer.html.classList.contains('hide')
+                    !filteredCookiesRegex ||
+                    cookieContainer.cookie.name.match(filteredCookiesRegex)
                 )
                 && (
                     skipCheckboxFilter ||
-                    cookieContainer.html.querySelector('.header > .btns > input[type="checkbox"].filter-include').checked
+                    cookieContainer.filterInclude
                 );
 
             if (passesFilter) {
@@ -669,7 +678,7 @@
 
     // == End loadedCookies filters == //
 
-    function showCookiesForTab() {
+    function showCookiesForTab(skipReload) {
         if (!cookieHandler.currentTab) {
             return;
         }
@@ -681,43 +690,44 @@
                 browserDetector.getApi().storage.local.get('showAllAdvanced').then(function (onGot) {
                     showAllAdvanced = onGot.showAllAdvanced || false;
                     document.querySelector('#advanced-toggle-all input').checked = showAllAdvanced;
-                    return showCookiesForTab();
+                    return showCookiesForTab(skipReload);
                 });
             } else {
                 browserDetector.getApi().storage.local.get('showAllAdvanced', function (onGot) {
                     showAllAdvanced = onGot.showAllAdvanced || false;
                     document.querySelector('#advanced-toggle-all input').checked = showAllAdvanced;
-                    return showCookiesForTab();
+                    return showCookiesForTab(skipReload);
                 });
             }
             return;
         }
 
-        const domain = getDomainFromUrl(cookieHandler.currentTab.url);
-        const subtitleLine = document.querySelector('.titles h2');
-        if (subtitleLine) {
-            subtitleLine.textContent = domain || cookieHandler.currentTab.url;
-        }
-
-        cookieHandler.getAllCookies(function (cookies) {
-            cookies = cookies.sort(sortCookiesByName);
-
-            loadedCookies = {};
-
+        const onReload = () => {
             setPageTitle('Cookie Editor', /* showSearchFilter */ true);
+
+            const subtitleLine = document.querySelector('.titles h2');
+            if (subtitleLine) {
+                const domain = getDomainFromUrl(cookieHandler.currentTab.url);
+                subtitleLine.textContent = domain || cookieHandler.currentTab.url;
+            }
 
             document.getElementById('button-bar-add').classList.remove('active');
             document.getElementById('button-bar-import').classList.remove('active');
             document.getElementById('button-bar-export').classList.remove('active');
             document.getElementById('button-bar-default').classList.add('active');
 
-            if (cookies.length > 0) {
+            if (areNoCookies()) {
+                showNoCookies();
+            }
+            else {
                 cookiesListHtml = document.createElement('ul');
-                cookies.forEach(function (cookie) {
-                    let id = Cookie.hashCode(cookie);
-                    loadedCookies[id] = new Cookie(id, cookie, showAllAdvanced);
-                    cookiesListHtml.appendChild(loadedCookies[id].html);
-                });
+
+                const cookieContainers = Object.values(loadedCookies);
+                cookieContainers.sort(sortCookieContainersByCookieName);
+
+                for (let cookieContainer of cookieContainers) {
+                    cookiesListHtml.appendChild(cookieContainer.html);
+                }
 
                 if (containerCookie.firstChild) {
                     disableButtons = true;
@@ -729,8 +739,6 @@
                     containerCookie.appendChild(cookiesListHtml);
                     filterCookies();
                 }
-            } else {
-                showNoCookies();
             }
 
             // Bugfix/hotfix for Chrome 84. Let's remove this once Chrome 90 or later is released
@@ -738,7 +746,23 @@
                 console.log('chrome 84 hotfix');
                 document.querySelectorAll('svg').forEach(x => {x.innerHTML = x.innerHTML});
             }
-        });
+        };
+
+        if (skipReload) {
+            onReload();
+        }
+        else {
+            cookieHandler.getAllCookies(function (cookies) {
+                loadedCookies = {};
+                if (cookies.length > 0) {
+                    cookies.forEach(function (cookie) {
+                        let id = Cookie.hashCode(cookie);
+                        loadedCookies[id] = new Cookie(id, cookie, showAllAdvanced);
+                    });
+                }
+                onReload();
+            });
+        }
     }
 
     function showNoCookies() {
@@ -837,8 +861,9 @@
             }
         }
 
-        // conditionally hide filtered scope when tab has no cookies, or no filter is active
-        if (noCookies || (getUnfilteredCookiesCount() === getFilteredCookiesCount())) {
+        // conditionally hide filtered scope when tab has no cookies, all cookies in tab are filtered, or no filter is active
+        const filteredCookiesCount = getFilteredCookiesCount();
+        if (noCookies || !filteredCookiesCount || (getUnfilteredCookiesCount() === filteredCookiesCount)) {
             radio = form.querySelector('input[type="radio"][name="export-scope"][value="tab-filtered"]');
             if (radio) {
                 radio.checked = false;
@@ -959,9 +984,9 @@
         showCookiesForTab();
     }
 
-    function sortCookiesByName(a, b) {
-        const aName = a.name.toLowerCase();
-        const bName = b.name.toLowerCase();
+    function sortCookieContainersByCookieName(a, b) {
+        const aName = a.cookie.name.toLowerCase();
+        const bName = b.cookie.name.toLowerCase();
         return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
     }
 
